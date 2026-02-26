@@ -3,7 +3,8 @@
 
 require('dotenv').config();
 const express = require('express');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripeSecretKey = (process.env.STRIPE_SECRET_KEY || '').trim();
+const stripe = require('stripe')(stripeSecretKey);
 const app = express();
 
 app.use(express.json());
@@ -11,9 +12,15 @@ app.use(express.static('.')); // Servir arquivos estáticos (index.html)
 
 // Endpoint para fornecer chave pública Stripe
 app.get('/config', (req, res) => {
-    res.json({
-        publicKey: process.env.STRIPE_PUBLIC_KEY
-    });
+    const publicKey = (process.env.STRIPE_PUBLIC_KEY || '').trim();
+
+    if (!publicKey) {
+        return res.status(500).json({
+            error: 'STRIPE_PUBLIC_KEY não configurada no ambiente'
+        });
+    }
+
+    res.json({ publicKey });
 });
 
 // Endpoint para criar sessão de checkout
