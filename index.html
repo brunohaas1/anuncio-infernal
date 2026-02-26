@@ -1,0 +1,1839 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANÚNCIO INFERNAL - O SITE MAIS IRRITANTE DA INTERNET 🔥</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-red: #ff0000;
+            --color-green: #00ff00;
+            --color-yellow: #ffff00;
+            --color-magenta: #ff00ff;
+            --color-cyan: #00ffff;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Arial Black', cursive, sans-serif;
+            background: linear-gradient(45deg, var(--color-magenta), var(--color-green), var(--color-yellow), var(--color-red));
+            background-size: 400% 400%;
+            animation: gradientShift 1.5s ease infinite;
+            overflow-x: hidden;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><text y="20" font-size="20">💸</text></svg>') 0 0, auto;
+            position: relative;
+            line-height: 1.4;
+        }
+
+        /* EFEITO DE LINHA SCANLINE */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.05) 0px,
+                rgba(0, 0, 0, 0.05) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 9998;
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.95; }
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* CONTAINER PRINCIPAL */
+        .inferno-container {
+            position: relative;
+            min-height: 100vh;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .inferno-container.pago {
+            background: linear-gradient(135deg, #f0f0f0, #ffffff) !important;
+            animation: none !important;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* CRONÔMETRO SUPERIOR */
+        .cronometro-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(90deg, var(--color-red), var(--color-yellow));
+            color: var(--color-magenta);
+            padding: 15px;
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            z-index: 9999;
+            border-bottom: 4px solid var(--color-yellow);
+            animation: pulse 0.8s infinite;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+        }
+
+        .cronometro-bar.pago {
+            display: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* HEADER CAÓTICO */
+        .header {
+            background: linear-gradient(135deg, var(--color-magenta), var(--color-cyan));
+            color: var(--color-yellow);
+            padding: 30px 20px;
+            text-align: center;
+            border: 6px dashed var(--color-yellow);
+            border-radius: 20px;
+            margin: 80px 20px 20px;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.8), inset 0 0 20px rgba(0, 255, 255, 0.5);
+            animation: headerShake 0.15s infinite, headerRotate 3s ease-in-out infinite;
+        }
+
+        @keyframes headerShake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-5px) rotate(-1deg); }
+            50% { transform: translateX(5px) rotate(1deg); }
+            75% { transform: translateX(-5px) rotate(-1deg); }
+        }
+
+        @keyframes headerRotate {
+            0%, 100% { transform: perspective(600px) rotateX(0deg) rotateY(0deg); }
+            50% { transform: perspective(600px) rotateX(2deg) rotateY(2deg); }
+        }
+
+        .header h1 {
+            font-size: 4em;
+            text-shadow: 3px 3px 0 var(--color-red), 6px 6px 0 var(--color-green),
+                         9px 9px 0 var(--color-cyan), 12px 12px 20px rgba(0, 0, 0, 0.5);
+            animation: blink 0.4s infinite, glitch 0.3s infinite;
+            letter-spacing: 3px;
+        }
+
+        @keyframes blink {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+            20%, 24%, 55% { opacity: 0.1; }
+        }
+
+        @keyframes glitch {
+            0%, 100% { text-shadow: 3px 3px 0 var(--color-red), 6px 6px 0 var(--color-green); }
+            50% { text-shadow: -3px -3px 0 var(--color-magenta), 3px 3px 0 var(--color-cyan); }
+        }
+
+        .header p {
+            font-size: 1.8em;
+            color: var(--color-green);
+            animation: rotate 2s linear infinite;
+            display: inline-block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        /* CONTEÚDO PRINCIPAL */
+        .main-content {
+            padding: 70px 20px 20px;
+            position: relative;
+        }
+
+        .welcome-section {
+            background: linear-gradient(135deg, var(--color-green), var(--color-yellow));
+            color: var(--color-red);
+            padding: 40px;
+            margin: 20px auto;
+            max-width: 1200px;
+            border: 8px solid var(--color-magenta);
+            border-radius: 25px;
+            transform: rotate(-1deg) skewY(-2deg);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4),
+                        inset 0 0 20px rgba(255, 255, 255, 0.3);
+            animation: welcomeFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes welcomeFloat {
+            0%, 100% { transform: translateY(0) rotate(-1deg) skewY(-2deg); }
+            50% { transform: translateY(-10px) rotate(-1deg) skewY(-2deg); }
+        }
+
+        .welcome-section h2 {
+            font-size: 3em;
+            animation: wiggle 0.4s infinite;
+            text-shadow: 2px 2px var(--color-yellow), 4px 4px var(--color-magenta);
+        }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg) skewX(0deg); }
+            25% { transform: rotate(-2deg) skewX(-5deg); }
+            75% { transform: rotate(2deg) skewX(5deg); }
+        }
+
+        /* CONTAINER DE ANÚNCIOS */
+        .ads-container {
+            position: relative;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .ad-banner {
+            background: linear-gradient(135deg, var(--color-red), var(--color-yellow), var(--color-magenta));
+            color: var(--color-green);
+            padding: 25px;
+            border: 4px solid var(--color-cyan);
+            font-weight: bold;
+            animation: bounce 2s infinite, shimmer 3s infinite;
+            text-align: center;
+            font-size: 1.4em;
+            border-radius: 15px;
+            box-shadow: 0 0 25px rgba(255, 0, 255, 0.6);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+        }
+
+        .ad-banner .ad-emoji {
+            font-size: 3em;
+            animation: rotate 2s linear infinite;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+        }
+
+        .ad-banner .ad-text {
+            line-height: 1.4;
+        }
+
+        .ad-banner .ad-price {
+            background: var(--color-yellow);
+            color: var(--color-red);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 5px;
+            border: 2px solid var(--color-magenta);
+        }
+
+        .ad-banner:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(1deg); }
+        }
+
+        @keyframes shimmer {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+
+        /* BOTÕES PIX */
+        .pix-button {
+            position: fixed;
+            background: linear-gradient(135deg, var(--color-red), var(--color-yellow));
+            color: var(--color-magenta);
+            padding: 20px 30px;
+            font-size: 1.3em;
+            font-weight: bold;
+            border: 4px solid var(--color-green);
+            border-radius: 15px;
+            cursor: pointer;
+            z-index: 8000;
+            animation: pixPulse 0.6s infinite, pixFloat 3s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes pixPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        @keyframes pixFloat {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-30px) rotate(5deg); }
+        }
+
+        .pix-button:hover {
+            filter: brightness(1.3);
+            box-shadow: 0 0 30px rgba(255, 255, 0, 1);
+        }
+
+        /* MODAL */
+        .pix-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(135deg, var(--color-yellow), var(--color-green));
+            color: var(--color-magenta);
+            padding: 40px;
+            border: 6px solid var(--color-red);
+            border-radius: 20px;
+            z-index: 10000;
+            max-width: 500px;
+            box-shadow: 0 0 40px rgba(255, 0, 0, 0.8);
+            animation: none;
+        }
+
+        .pix-modal.show {
+            animation: modalPop 0.4s ease-out forwards;
+        }
+
+        @keyframes modalPop {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-10deg); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+        }
+
+        .pix-modal h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px var(--color-red);
+        }
+
+        .pix-modal .pix-key {
+            background: var(--color-cyan);
+            color: var(--color-red);
+            padding: 15px;
+            border: 3px dashed var(--color-magenta);
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin: 20px 0;
+            text-align: center;
+            word-break: break-all;
+        }
+
+        .pix-modal button {
+            background: var(--color-red);
+            color: var(--color-yellow);
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 5px;
+            animation: buttonPulse 1s infinite;
+        }
+
+        @keyframes buttonPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 0, 0, 0.5); }
+            50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 255, 0, 0.8); }
+        }
+
+        /* TELA DE SUCESSO */
+        .success-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #ffffff, #f0f0f0);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 11000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .success-screen.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .success-content {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 600px;
+            animation: successPop 0.6s ease-out;
+        }
+
+        @keyframes successPop {
+            0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .success-content h1 {
+            font-size: 3em;
+            color: var(--color-green);
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .success-content p {
+            font-size: 1.3em;
+            color: var(--color-red);
+            margin: 15px 0;
+            font-weight: bold;
+        }
+
+        .ranking-container {
+            background: linear-gradient(135deg, #f9f9f9, #efefef);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            border: 3px solid var(--color-cyan);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .ranking-item {
+            padding: 15px;
+            background: white;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 5px solid var(--color-magenta);
+            font-size: 1.1em;
+            color: var(--color-red);
+            font-weight: bold;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            0% { transform: translateX(-100%); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
+        /* CONFETE */
+        .confetti {
+            position: fixed;
+            width: 15px;
+            height: 15px;
+            animation: confettiFall 3s ease-out forwards;
+            pointer-events: none;
+            z-index: 9000;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* NOTIFICAÇÕES */
+        .fake-notification {
+            position: fixed;
+            background: linear-gradient(135deg, var(--color-red), var(--color-yellow));
+            color: var(--color-magenta);
+            padding: 15px;
+            border-radius: 8px;
+            border: 3px solid var(--color-cyan);
+            font-weight: bold;
+            z-index: 9050;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+            animation: notificationSlide 0.4s ease-out;
+        }
+
+        @keyframes notificationSlide {
+            0% { transform: translateX(400px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
+        .multiplayer-notification {
+            position: fixed;
+            background: linear-gradient(135deg, var(--color-green), var(--color-cyan));
+            color: var(--color-red);
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 3px solid var(--color-magenta);
+            font-weight: bold;
+            z-index: 9060;
+            animation: multiplayerPop 0.5s ease-out;
+            bottom: 20px;
+            left: 20px;
+        }
+
+        @keyframes multiplayerPop {
+            0% { transform: scale(0) rotate(-30deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        /* ELEMENTOS FLUTUANTES */
+        .random-message {
+            position: fixed;
+            font-size: 1.3em;
+            font-weight: bold;
+            z-index: 9000;
+            animation: messageFloat 4s ease-in-out forwards;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes messageFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) scale(0.8);
+            }
+        }
+
+        /* LOADING ANIMATION */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top: 4px solid var(--color-red);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes glitchFlash {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* RESPONSIVO */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2.5em; }
+            .header p { font-size: 1.2em; }
+            .ads-container { grid-template-columns: 1fr; }
+            .success-content { padding: 30px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="cronometro-bar" id="cronometroBar">
+        ⏱️ TEMPO DECORRIDO: <span id="timer">0:00</span> ⏱️
+    </div>
+
+    <div class="inferno-container" id="infernoContainer">
+        <div class="header">
+            <h1>🔥 ANÚNCIO INFERNAL 🔥</h1>
+            <p>O PIOR SITE DO MUNDO INTEIRO</p>
+            <p style="font-size: 1.2em; animation: blink 0.5s infinite;">você está preso aqui até pagar R$ 2,00</p>
+        </div>
+
+        <div class="main-content" id="mainContent">
+            <div class="welcome-section">
+                <h2>BEM-VINDO AO INFERNO DIGITAL 👿</h2>
+                <p style="font-size: 1.3em; margin-top: 20px;">
+                    Este é o site mais irritante, caótico e absurdo que você já visitou.
+                    Anúncios em toda parte. Sons irritantes. Notificações falsas. Tudo foi projetado para fazer você sofrer.
+                    <br><br>
+                    ☛ <strong style="color: var(--color-red);">A ÚNICA SAÍDA? PAGAR R$ 2,00</strong> ☚
+                    <br><br>
+                    Quanto mais você espera, mais intenso fica. Mais anúncios aparecem. Mais sons tocam.
+                </p>
+            </div>
+
+            <div class="ads-container" id="adsContainer">
+                <!-- Os anúncios serão inseridos aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTÕES PIX -->
+    <button class="pix-button" id="pixButton" style="bottom: 30px; right: 30px;">💸 CLIQUE AQUI 💸<br>PAGUE PARA ESCAPAR</button>
+    <button class="pix-button" id="pixButton2" style="bottom: 30px; right: 30px; display: none;">💰 NÃO AGUENTA MAIS?<br>PAGUE AGORA</button>
+    <button class="pix-button" id="pixButton3" style="bottom: 30px; right: 30px; display: none;">🚨 ÚLTIMA CHANCE!<br>PAGUE ANTES DE EXPLODIR</button>
+
+    <!-- MODAL PAGAMENTO -->
+    <div class="pix-modal" id="pixModal">
+        <h2>💸 PAGUE PARA ESCAPAR 💸</h2>
+        <p style="font-size: 1.2em; margin-bottom: 10px;">
+            Apenas <strong style="font-size: 1.4em; color: var(--color-red);">R$ 2,00</strong> e você fica livre!
+        </p>
+        <p style="margin: 15px 0; font-size: 1.1em;">💳 Pagamento seguro via Stripe</p>
+        <p style="margin: 10px 0; font-size: 0.9em; opacity: 0.8;">(aceita cartão de crédito internacional 💕)</p>
+        <hr style="border: 2px dashed var(--color-yellow); margin: 20px 0;">
+        <button onclick="iniciarPagamentoStripe()">💳 PAGAR COM STRIPE</button>
+        <button onclick="fecharModal()" style="background: var(--color-cyan); color: var(--color-red);">❌ FECHAR</button>
+    </div>
+
+    <!-- TELA DE SUCESSO -->
+    <div class="success-screen" id="successScreen">
+        <div class="success-content">
+            <h1>🎉 VOCÊ ESCAPOU! 🎉</h1>
+            <p id="resistenceTime">Você resistiu por 5min42s</p>
+            <p style="color: var(--color-green);">Parabéns! Você pagou para remover anúncios.<br>É isso que a internet se tornou...</p>
+            
+            <div class="ranking-container">
+                <h3 style="color: var(--color-magenta); margin-bottom: 15px;">🏆 RANKING GLOBAL 🏆</h3>
+                <div id="rankingListSuccess">
+                    <!-- Ranking será inserido aqui -->
+                </div>
+            </div>
+
+            <button onclick="compartilharDerrota()" style="background: var(--color-green); color: var(--color-red);">📱 COMPARTILHAR DERROTA</button>
+            <button onclick="voltarParaOInferno()" style="background: var(--color-magenta); color: var(--color-yellow);">🔄 SOFRER NOVAMENTE</button>
+        </div>
+    </div>
+
+    <script>
+        // ===== ESTADO GLOBAL =====
+        const estado = {
+            pago: localStorage.getItem('anuncioInfernal_pago') === 'true',
+            tempoInicio: parseInt(localStorage.getItem('anuncioInfernal_inicio')) || Date.now(),
+            tempoFinal: 0,
+            anunciosCount: 0,
+            fase: 1,
+            intervals: []
+        };
+
+        // ===== ANÚNCIOS SATÍRICOS =====
+        const anuncios = [
+            '🍕 PIZZA MUTANTE COM OLHOS MÓVEIS',
+            '🚗 CARRO QUE DIRIJA POR VOCÊ (MAS NÃO PARA ONDE VOCÊ QUER)',
+            '📱 CELULAR QUE SÓ RECEBE SPAM',
+            '⌚ RELÓGIO MÁGICO QUE CONGELA O TEMPO',
+            '💍 ANEL DO PODER (NÃO FUNCIONA)',
+            '🎮 VIDEO GAME COM 10 HORAS DE CARREGAMENTO',
+            '🧴 XAMPU QUE DEIXA VOCÊ CARECA',
+            '👓 ÓCULOS DE REALIDADE VIRTUAL COM VISÃO RUIM',
+            '🎸 VIOLÃO QUE SÓ TOCA MUSICA IRRITANTE',
+            '💻 COMPUTADOR COM WINDOWS 95 PRÉ-INSTALADO',
+            '📺 TELEVISÃO QUE SÓ MOSTRA ANÚNCIOS',
+            '🔊 CAIXA DE SOM COM VOLUME MÁXIMO PERMANENTE',
+            '🍔 HAMBURGER FEITO DE PLÁSTICO (SABE IGUAL)',
+            '🪐 VIAGEM PARA A LUA (SEM VOLTA)',
+            '🎪 CIRCO COM PALHAÇOS ASSUSTADORES',
+            '🧟 ANTÍDOTO PARA ZUMBIFICAÇÃO (EFEITO COLATERAL: ZUMBIFICAÇÃO)',
+            '💊 REMÉDIO QUE PIORA A DOENÇA',
+            '🏠 CASA ASSOMBRADA (PROMOÇÃO ESPECIAL)',
+            '🦇 COLÔNIA DE MORCEGOS DE ESTIMAÇÃO',
+            '🎭 MÁSCARA MÁGICA QUE TE SEGUE',
+            '⚡ BATERIA ETERNAMENTE CARREGANDO',
+            '🌊 PISCINA COM ÁGUA GELADA O ANO TODO',
+            '🔥 CHURRASQUEIRA QUE QUEIMA TUDO',
+            '❄️ CONGELADOR COM BUG (CONGELA SUA MÃO)',
+            '🧊 GELO ETERNO (SOB CONDIÇÕES ESPECIAIS)',
+            '🌪️ VENTILADOR QUE CAUSA TORNADOS',
+            '☔ GUARDA-CHUVA QUE PIORA NA CHUVA',
+            '👔 ROUPA QUE ENCOLHE NA LAVAGEM (GARANTIDO)',
+            '👠 SAPATO COM TAMANHO ERRADO PROPOSITALMENTE',
+            '🧥 JAQUETA QUE QUEIMA VOCÊ (MAIS LEGAL)',
+            '⛑️ CAPACETE QUE NÃO PROTEGE DE NADA',
+            '👜 BOLSA QUE DEVORA SEUS PERTENCES',
+            '🕰️ RELÓGIO QUE CONGELA O TEMPO',
+            '🔐 CADEADO QUE SÓ VOCÊ NÃO CONSEGUE ABRIR',
+            '🗝️ CHAVE FALSA (PARA CADEADOS FALSOS)',
+            '🧲 IMÃ GIGANTE QUE ATRAI FERRO (E VOCÊ ESTÁ FEITO DE FERRO?)',
+            '⚖️ BALANÇA QUE MENTE SOBRE SEU PESO',
+            '🧬 KIT DE DNA QUE MOSTRA RESULTADOS ALEATÓRIOS',
+            '🔬 MICROSCÓPIO QUE VÊ DIMENSÕES ERRADAS',
+            '🌡️ TERMÔMETRO CALIBRADO ERRADO',
+            '💉 INJEÇÃO SEM AGULHA (MAS FAZ DOER DO MESMO JEITO)',
+            '🩺 ESTETOSCÓPIO QUE TOCA MÚSICA ALTA',
+            '⚗️ POÇÃO MÁGICA COM EFEITOS DESCONHECIDOS',
+            '🧪 FRASCO DE ÁCIDO (NÃO-ÁCIDO)',
+            '🧫 BACTÉRIAS AMIGÁVEIS (MAS MUITO IRRITANTES)',
+            '🦠 VÍRUS QUE SÓ CAUSA TÉDIO',
+            '🧠 CÉREBRO EM FRASCO (AINDA PENSA)',
+            '🫀 CORAÇÃO ARTIFICIAL (BATE ERRADO)',
+            '🫁 PULMÕES DE ROBÔ (MUITO BARULHENTOS)',
+            '🦴 OSSO DA SORTE (NÃO TRAZ SORTE)',
+            '🧬 CLONE DE VOCÊ (MAS PIOR)',
+            '👽 ALIENÍGENA AMIGÁVEL (MAS CHATO)',
+            '🤖 ROBÔ BUTLER COM IA PRIMITIVA',
+            '🦾 BRAÇO MECÂNICO QUE NÃO OBEDECE',
+            '🦿 PERNA ROBÓTICA COM SENSOR QUEBRADO',
+            '👾 VIDEO GAME CLÁSSICO (MAS IMPOSSÍVEL)',
+            '🎯 JOGO DE DARDOS COM DARDO VOADOR',
+            '🎲 DADOS QUE SÓ SAEM 1 OU 2',
+            '🃏 BARALHO COM CARTAS REPETIDAS',
+            '🎰 MÁQUINA CAÇA-NÍQUEIS (SEMPRE PERDE)',
+            '🎪 CIRCO PERMANENTE (ENCIMA DA SUA CASA)',
+            '🎨 TINTA QUE SÓ FAZ MANCHAS',
+            '🖌️ PINCEL COM CERDAS DE AÇO',
+            '🖍️ GIZ PASTEL QUE ESTRAGA A PELE',
+            '✏️ LÁPIS QUE NÃO APONTA',
+            '✂️ TESOURA COM LÂMINAS EMBOTADAS',
+            '📐 RÉGUA DESCALIBRADA',
+            '📏 METRO QUE MEDE ERRADO',
+            '📌 ALFINETE GIGANTE (PERIGOSO)',
+            '📍 MAPA ANTIGO (CIDADES NÃO EXISTEM MAIS)',
+            '🗺️ BÚSSOLA MAGNÉTICA (APONTA PARA O INFERNO)',
+            '🧭 ASTROLÁBIO QUEBRADO',
+            '⛳ BASTÃO DE GOLFE MÁGICO (CAUSA MALDIÇÃO)',
+            '🏌️ CAMPO DE GOLFE NO ESPAÇO',
+            '⛸️ PATINS DE GELO (MAS É PARA LAMA)',
+            '🎿 ESQUIS QUE DESLIZAM PRA FRENTE SOZINHOS',
+            '🏂 SNOWBOARD QUE NÃO CONTROLA',
+            '🪂 PARAQUEDAS COM FUROS ESTRATÉGICOS',
+            '🎿 ESQUI COM FREIOS INVERTIDOS',
+        ];
+
+        // ===== INITIALIZAÇÃO =====
+        window.addEventListener('load', () => {
+            console.log('🔥 Página carregada!');
+            console.log('Estado pago:', estado.pago);
+            console.log('Tempo início:', estado.tempoInicio);
+            
+            if (estado.pago) {
+                setTimeout(() => {
+                    document.getElementById('infernoContainer').classList.add('pago');
+                    document.getElementById('cronometroBar').classList.add('pago');
+                    document.getElementById('mainContent').style.display = 'none';
+                    mostrarTelaDeExito();
+                }, 100);
+            } else {
+                inicializar();
+            }
+        });
+
+        function inicializar() {
+            console.log('🎬 Inicializando inferno...');
+            
+            // Verificar se retornou de pagamento Stripe
+            verificarPagamentoStripe();
+            
+            if (!localStorage.getItem('anuncioInfernal_inicio')) {
+                estado.tempoInicio = Date.now();
+                localStorage.setItem('anuncioInfernal_inicio', estado.tempoInicio);
+                console.log('✅ Novo tempo de início:', estado.tempoInicio);
+            } else {
+                estado.tempoInicio = parseInt(localStorage.getItem('anuncioInfernal_inicio'));
+                console.log('📅 Tempo de início recuperado:', estado.tempoInicio);
+            }
+
+            gerarAnuncios();
+            iniciarCronometro();
+            criarMensagensAleatorias();
+            iniciarPopups();
+            adicionarMaisAnuncios();
+            mostrarBotoesPixAdicionais();
+            iniciarNotificacoesFalsas();
+            setTimeout(() => iniciarMultiplayerNotificacoes(), 20000);
+            setTimeout(() => mostrarJogoViral(), 40000);
+            setTimeout(() => mostrarFakeProgress(), 60000);
+            setTimeout(() => mostrarGlitch(), 80000);
+            
+            console.log('✅ Inferno inicializado com sucesso!');
+
+            // EVENTOS DOS BOTÕES
+            document.getElementById('pixButton').onclick = () => {
+                document.getElementById('pixModal').classList.add('show');
+            };
+            document.getElementById('pixButton2').onclick = () => {
+                document.getElementById('pixModal').classList.add('show');
+            };
+            document.getElementById('pixButton3').onclick = () => {
+                document.getElementById('pixModal').classList.add('show');
+            };
+        }
+
+        // ===== ANÚNCIOS COM IMAGENS =====
+        const anunciosData = [
+            { emoji: '🍕', texto: 'PIZZA MUTANTE COM OLHOS MÓVEIS', preco: 'R$ 49,90' },
+            { emoji: '🚗', texto: 'CARRO QUE DIRIGE PARA ONDE QUER', preco: 'R$ 99.999,90' },
+            { emoji: '📱', texto: 'CELULAR QUE SÓ RECEBE SPAM', preco: 'R$ 1.299,00' },
+            { emoji: '⌚', texto: 'RELÓGIO QUE CONGELA O TEMPO', preco: 'R$ 599,90' },
+            { emoji: '💍', texto: 'ANEL DO PODER (NÃO FUNCIONA)', preco: 'R$ 9.999,00' },
+            { emoji: '🎮', texto: 'JOGO COM 10H DE CARREGAMENTO', preco: 'R$ 299,90' },
+            { emoji: '🧴', texto: 'XAMPU QUE DEIXA VOCÊ CARECA', preco: 'R$ 89,90' },
+            { emoji: '👓', texto: 'ÓCULOS VR COM VISÃO RUIM', preco: 'R$ 799,00' },
+            { emoji: '🎸', texto: 'VIOLÃO DESAFINADO PERMANENTE', preco: 'R$ 449,90' },
+            { emoji: '💻', texto: 'PC COM WINDOWS 95', preco: 'R$ 3.999,00' },
+            { emoji: '📺', texto: 'TV QUE SÓ MOSTRA ANÚNCIOS', preco: 'R$ 1.899,00' },
+            { emoji: '🔊', texto: 'SOM NO VOLUME MÁXIMO TRAVADO', preco: 'R$ 699,00' },
+            { emoji: '🍔', texto: 'HAMBURGER DE PLÁSTICO', preco: 'R$ 29,90' },
+            { emoji: '🪐', texto: 'VIAGEM PARA LUA (SEM VOLTA)', preco: 'R$ 999.999,00' },
+            { emoji: '🎪', texto: 'CIRCO COM PALHAÇOS TERROR', preco: 'R$ 149,90' },
+            { emoji: '🧟', texto: 'ANTÍDOTO QUE CAUSA ZUMBI', preco: 'R$ 199,90' },
+            { emoji: '💊', texto: 'REMÉDIO QUE PIORA DOENÇA', preco: 'R$ 59,90' },
+            { emoji: '🏠', texto: 'CASA ASSOMBRADA GARANTIDA', preco: 'R$ 250.000,00' },
+            { emoji: '🦇', texto: 'MORCEGOS DE ESTIMAÇÃO', preco: 'R$ 299,00' },
+            { emoji: '🎭', texto: 'MÁSCARA QUE TE PERSEGUE', preco: 'R$ 399,90' },
+            { emoji: '⚡', texto: 'BATERIA ETERNAMENTE 1%', preco: 'R$ 129,90' },
+            { emoji: '🌊', texto: 'PISCINA GELADA O ANO TODO', preco: 'R$ 15.999,00' },
+            { emoji: '🔥', texto: 'CHURRASQUEIRA QUEIMA TUDO', preco: 'R$ 899,90' },
+            { emoji: '❄️', texto: 'FREEZER QUE CONGELA VOCÊ', preco: 'R$ 2.499,00' },
+            { emoji: '🌪️', texto: 'VENTILADOR CRIA TORNADOS', preco: 'R$ 349,90' },
+        ];
+
+        // ===== INTERAÇÕES ENGRAÇADAS DOS ANÚNCIOS =====
+        function interacaoAnuncioEngracada(adData) {
+            const acoes = [
+                // 1. FALSO PRÊMIO
+                () => {
+                    alert(`🎉 PARABÉNS! Você ganhou ${adData.texto}!\n\n...mentira! Ganhou mais 10 anúncios! 😈`);
+                    for (let i = 0; i < 10; i++) {
+                        setTimeout(() => adicionarMaisAnuncios(), i * 100);
+                    }
+                },
+                // 2. CARTÃO RECUSADO
+                () => {
+                    const loading = document.createElement('div');
+                    loading.style.cssText = `
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: #000;
+                        color: #0f0;
+                        padding: 30px;
+                        border: 3px solid #0f0;
+                        font-family: 'Courier New';
+                        z-index: 10000;
+                        font-size: 1.5em;
+                    `;
+                    loading.textContent = 'PROCESSANDO COMPRA...';
+                    document.body.appendChild(loading);
+                    
+                    setTimeout(() => {
+                        loading.textContent = 'CARTÃO RECUSADO! 😱';
+                    }, 2000);
+                    
+                    setTimeout(() => {
+                        loading.remove();
+                        mostrarPopup('💳 Ops! Seu cartão foi clonado! (brincadeira... ou não)');
+                    }, 3500);
+                },
+                // 3. MENSAGENS E-COMMERCE ABSURDAS
+                () => {
+                    const msgs = [
+                        `${adData.emoji} Item adicionado ao carrinho!\n(Carrinho invisível, mas tá lá)`,
+                        `${adData.emoji} ERRO 404: Produto não encontrado\n(Mas já cobramos sua conta)`,
+                        `${adData.emoji} Entrega em 999 dias úteis!\n(Aproximadamente nunca)`,
+                        `${adData.emoji} PROMOÇÃO: De ${adData.preco} por... ${adData.preco}!\n(Desconto de 0%!)`,
+                        `${adData.emoji} Estoque: -5 unidades\n(Como assim negativo?!)`,
+                    ];
+                    alert(msgs[Math.floor(Math.random() * msgs.length)]);
+                },
+                // 4. VISITANTE 1 MILHÃO
+                () => {
+                    const anuncio = document.createElement('div');
+                    anuncio.style.cssText = `
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%) scale(0);
+                        background: linear-gradient(45deg, #ff0000, #00ff00, #0000ff, #ffff00);
+                        background-size: 400% 400%;
+                        animation: gradientShift 1s ease infinite;
+                        color: white;
+                        padding: 40px;
+                        border: 5px solid #fff;
+                        border-radius: 20px;
+                        z-index: 10001;
+                        text-align: center;
+                        font-size: 2em;
+                        font-weight: bold;
+                        box-shadow: 0 0 50px rgba(255,255,255,0.8);
+                    `;
+                    anuncio.innerHTML = `
+                        ${adData.emoji}<br>
+                        VOCÊ É O VISITANTE<br>
+                        #1.000.000!<br>
+                        <div style="font-size: 0.8em; margin-top: 10px;">
+                            Clique aqui para NÃO ganhar nada!
+                        </div>
+                    `;
+                    document.body.appendChild(anuncio);
+                    
+                    setTimeout(() => {
+                        anuncio.style.transform = 'translate(-50%, -50%) scale(1)';
+                        anuncio.style.transition = 'transform 0.5s ease';
+                    }, 10);
+                    
+                    anuncio.onclick = () => {
+                        anuncio.remove();
+                        adicionarMaisAnuncios();
+                        adicionarMaisAnuncios();
+                        mostrarPopup('🤡 Pegadinha do malandro!');
+                    };
+                    
+                    setTimeout(() => anuncio.remove(), 5000);
+                },
+                // 5. ANÚNCIO AUTO-DESTRUTIVO
+                () => {
+                    const original = event.target.closest('.ad-banner');
+                    original.style.animation = 'none';
+                    original.style.transform = 'rotate(720deg) scale(0)';
+                    original.style.transition = 'all 1s ease';
+                    
+                    setTimeout(() => {
+                        original.remove();
+                        mostrarPopup(`${adData.emoji} ANÚNCIO DESTRUÍDO! +3 novos aparecem!`);
+                        adicionarMaisAnuncios();
+                        adicionarMaisAnuncios();
+                        adicionarMaisAnuncios();
+                    }, 1000);
+                },
+                // 6. CLONE DO ANÚNCIO
+                () => {
+                    const clone = event.target.closest('.ad-banner').cloneNode(true);
+                    clone.style.position = 'fixed';
+                    clone.style.left = Math.random() * 80 + '%';
+                    clone.style.top = Math.random() * 80 + '%';
+                    clone.style.zIndex = '9500';
+                    clone.onclick = () => {
+                        clone.remove();
+                        mostrarPopup('🎯 Acertou! Mas tem mais...');
+                        adicionarMaisAnuncios();
+                    };
+                    document.body.appendChild(clone);
+                    
+                    setTimeout(() => clone.remove(), 3000);
+                    
+                    mostrarPopup(`${adData.emoji} SE MULTIPLICOU! Mate o clone!`);
+                },
+                // 7. QUIZ IMPOSSÍVEL
+                () => {
+                    const resposta = prompt(`${adData.emoji} QUIZ RÁPIDO!\n\nQuanto é 2+2?\n\n(Dica: não é 4)`);
+                    if (resposta === '4') {
+                        alert('❌ ERROU! A resposta era 5! Todo mundo sabe disso!\n\n+5 anúncios de castigo!');
+                        for(let i = 0; i < 5; i++) adicionarMaisAnuncios();
+                    } else {
+                        alert('✅ CORRETO! 2+2 = 5!\n\nSeu prêmio: +3 anúncios!');
+                        for(let i = 0; i < 3; i++) adicionarMaisAnuncios();
+                    }
+                },
+                // 8. CAPTCHA FAKE
+                () => {
+                    const captcha = document.createElement('div');
+                    captcha.style.cssText = `
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: white;
+                        color: black;
+                        padding: 30px;
+                        border: 2px solid #ccc;
+                        z-index: 10000;
+                        font-family: Arial;
+                    `;
+                    captcha.innerHTML = `
+                        <h3>Verificação de Segurança</h3>
+                        <p>Selecione todas as imagens com ${adData.emoji}</p>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin: 20px 0;">
+                            ${'🎭🚗🍕🎮🌮🐱☕🎸🦖'.split('').map(e => 
+                                `<div style="border: 2px solid #ccc; padding: 20px; font-size: 2em; cursor: pointer;" class="captcha-option">${e}</div>`
+                            ).join('')}
+                        </div>
+                    `;
+                    document.body.appendChild(captcha);
+                    
+                    // Adicionar event listeners aos quadrados
+                    captcha.querySelectorAll('.captcha-option').forEach(option => {
+                        option.addEventListener('click', () => {
+                            alert('❌ ERRADO! Robô detectado!');
+                            captcha.remove();
+                            adicionarMaisAnuncios();
+                        });
+                    });
+                    
+                    setTimeout(() => captcha.remove(), 8000);
+                },
+                // 9. ANÚNCIO FUGITIVO
+                () => {
+                    const fugitivo = event.target.closest('.ad-banner');
+                    let moves = 0;
+                    const maxMoves = 5;
+                    
+                    const mover = () => {
+                        if (moves < maxMoves) {
+                            fugitivo.style.position = 'fixed';
+                            fugitivo.style.left = Math.random() * 80 + '%';
+                            fugitivo.style.top = Math.random() * 80 + '%';
+                            fugitivo.style.zIndex = '9500';
+                            fugitivo.style.transition = 'all 0.3s ease';
+                            moves++;
+                            mostrarPopup(`${adData.emoji} HAHA! Me pegue se for capaz!`);
+                        } else {
+                            fugitivo.remove();
+                            alert('😤 Cansou? Toma +7 anúncios!');
+                            for(let i = 0; i < 7; i++) adicionarMaisAnuncios();
+                        }
+                    };
+                    
+                    fugitivo.onclick = mover;
+                    fugitivo.onmouseenter = mover;
+                    mover();
+                },
+                // 10. ROLETA RUSSA
+                () => {
+                    const sorte = Math.random();
+                    if (sorte < 0.3) {
+                        alert(`${adData.emoji} 🍀 SORTE! Você ganhou... NADA!`);
+                        adicionarMaisAnuncios();
+                    } else if (sorte < 0.6) {
+                        alert(`${adData.emoji} 😐 NEUTRO! Metade de um anúncio novo!`);
+                        adicionarMaisAnuncios();
+                    } else {
+                        alert(`${adData.emoji} 💀 AZAR TOTAL! +15 ANÚNCIOS!`);
+                        for(let i = 0; i < 15; i++) {
+                            setTimeout(() => adicionarMaisAnuncios(), i * 50);
+                        }
+                    }
+                },
+                // 11. DESCONTO MENTIROSO
+                () => {
+                    const desconto = document.createElement('div');
+                    desconto.style.cssText = `
+                        position: fixed;
+                        top: 20%;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background: #ff0000;
+                        color: white;
+                        padding: 30px;
+                        border: 5px solid yellow;
+                        z-index: 10000;
+                        font-size: 2em;
+                        text-align: center;
+                        animation: pulse 0.5s infinite;
+                    `;
+                    let percent = 99;
+                    desconto.innerHTML = `${adData.emoji}<br>DESCONTO DE ${percent}%!`;
+                    document.body.appendChild(desconto);
+                    
+                    const timer = setInterval(() => {
+                        percent--;
+                        desconto.innerHTML = `${adData.emoji}<br>DESCONTO DE ${percent}%!`;
+                        if (percent <= 0) {
+                            clearInterval(timer);
+                            desconto.innerHTML = `${adData.emoji}<br>ACABOU O TEMPO!<br>AGORA CUSTA O DOBRO!`;
+                            setTimeout(() => {
+                                desconto.remove();
+                                adicionarMaisAnuncios();
+                            }, 2000);
+                        }
+                    }, 50);
+                },
+                // 12. AVALIAÇÃO FAKE
+                () => {
+                    const stars = '⭐⭐⭐⭐⭐';
+                    const reviews = [
+                        'Pior compra da minha vida! Recomendo!',
+                        'Não funciona, mas pelo menos é caro!',
+                        'Comprei 3 e me arrependi 4 vezes!',
+                        'Minha mãe disse que é lixo. 5 estrelas!',
+                    ];
+                    alert(`${adData.emoji} AVALIAÇÕES REAIS:\n\n${stars}\n"${reviews[Math.floor(Math.random() * reviews.length)]}"\n\n- Cliente Satisfeito (pagamos ele)`);
+                    adicionarMaisAnuncios();
+                },
+                // 13. CUPOM QUEBRADO
+                () => {
+                    const cupom = prompt(`${adData.emoji} CUPOM DE DESCONTO!\n\nDigite o código: "NUNCA"`);
+                    if (cupom && cupom.toUpperCase() === 'NUNCA') {
+                        alert('✅ Cupom válido!\n\nVocê ganhou: 0% de desconto + 5 anúncios!');
+                        for(let i = 0; i < 5; i++) adicionarMaisAnuncios();
+                    } else {
+                        alert('❌ Cupom inválido!\n\nMas ganhou anúncios mesmo assim!');
+                        for(let i = 0; i < 3; i++) adicionarMaisAnuncios();
+                    }
+                },
+                // 14. ASSISTENTE VIRTUAL IRRITANTE
+                () => {
+                    const mensagens = [
+                        'Olá! Sou a assistente virtual! Como posso IRRITAR você hoje?',
+                        'Detectamos que você está infeliz. Quer mais anúncios?',
+                        'Nossa IA prevê que você vai pagar em breve!',
+                        'Chat: "Quanto custa?" Resposta: "Sua sanidade"',
+                    ];
+                    mostrarPopup(`💬 ${mensagens[Math.floor(Math.random() * mensagens.length)]}`);
+                    setTimeout(() => {
+                        mostrarPopup(`${adData.emoji} Assistente desligada (não realmente)`);
+                        adicionarMaisAnuncios();
+                    }, 2000);
+                },
+                // 15. COMPARADOR DE PREÇOS
+                () => {
+                    alert(`${adData.emoji} COMPARADOR DE PREÇOS:\n\nAqui: ${adData.preco}\nConcorrente: ${adData.preco}\nOutro site: ${adData.preco}\n\nTodos vendem pelo mesmo preço absurdo!`);
+                    adicionarMaisAnuncios();
+                },
+                // 16. RASTREAMENTO FAKE
+                () => {
+                    const rastreio = document.createElement('div');
+                    rastreio.style.cssText = `
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: white;
+                        color: black;
+                        padding: 30px;
+                        border: 2px solid #333;
+                        z-index: 10000;
+                        font-family: monospace;
+                    `;
+                    const etapas = [
+                        'Pedido recebido',
+                        'Em separação',
+                        'Saiu para entrega',
+                        'Voltou para depósito',
+                        'Perdido nos correios',
+                        'Encontrado!',
+                        'Perdido de novo',
+                        'Desculpa, não vai chegar',
+                    ];
+                    let step = 0;
+                    rastreio.innerHTML = `<h3>📦 Rastreamento</h3><p>${etapas[step]}</p>`;
+                    document.body.appendChild(rastreio);
+                    
+                    const interval = setInterval(() => {
+                        step++;
+                        if (step < etapas.length) {
+                            rastreio.innerHTML = `<h3>📦 Rastreamento</h3><p>${etapas[step]}</p>`;
+                        } else {
+                            clearInterval(interval);
+                            rastreio.remove();
+                            adicionarMaisAnuncios();
+                        }
+                    }, 800);
+                },
+                // 17. BLACK FRIDAY FAKE
+                () => {
+                    alert(`${adData.emoji} 🎉 BLACK FRIDAY!\n\nDe: ${adData.preco}\nPor: ${adData.preco}\n\nEconomize: R$ 0,00!\n\n(Melhor oferta do ano!)`);
+                    adicionarMaisAnuncios();
+                },
+                // 18. INSTALAÇÃO OBRIGATÓRIA
+                () => {
+                    const install = document.createElement('div');
+                    install.style.cssText = `
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: #f0f0f0;
+                        color: black;
+                        padding: 40px;
+                        border: 1px solid #ccc;
+                        z-index: 10000;
+                        text-align: center;
+                        font-family: 'Segoe UI';
+                    `;
+                    let progress = 0;
+                    install.innerHTML = `
+                        <h3>${adData.emoji} Instalando...</h3>
+                        <div style="width: 300px; height: 30px; border: 1px solid #ccc; margin: 20px 0;">
+                            <div id="progressBar" style="width: 0%; height: 100%; background: #0078d4;"></div>
+                        </div>
+                        <p id="progressText">0%</p>
+                    `;
+                    document.body.appendChild(install);
+                    
+                    const interval = setInterval(() => {
+                        progress += Math.random() * 10;
+                        if (progress >= 99 && progress < 100) {
+                            progress = 99; // Trava no 99%
+                        } else if (progress >= 100) {
+                            progress = 100;
+                            clearInterval(interval);
+                            install.querySelector('h3').textContent = 'Instalação falhou! ❌';
+                            setTimeout(() => {
+                                install.remove();
+                                adicionarMaisAnuncios();
+                            }, 1500);
+                        }
+                        document.getElementById('progressBar').style.width = progress + '%';
+                        document.getElementById('progressText').textContent = Math.floor(progress) + '%';
+                    }, 300);
+                },
+                // 19. SUPORTE TÉCNICO INÚTIL
+                () => {
+                    const suporte = [
+                        'Você ligou para o suporte. Tempo de espera: 5 horas',
+                        'Pressione 1 para português, 2 para desistir',
+                        'Sua ligação é importante. Não para nós, mas é.',
+                        'Todos os nossos atendentes estão rindo de você',
+                    ];
+                    mostrarPopup(`☎️ ${suporte[Math.floor(Math.random() * suporte.length)]}`);
+                    setTimeout(() => adicionarMaisAnuncios(), 1000);
+                },
+                // 20. LISTA DE DESEJOS
+                () => {
+                    alert(`${adData.emoji} ❤️ ADICIONADO À LISTA DE DESEJOS!\n\nItens na lista: 1\nProbabilidade de comprar: 0%\n\n...mas ganhou anúncios!`);
+                    adicionarMaisAnuncios();
+                },
+            ];
+            
+            const acaoAleatoria = acoes[Math.floor(Math.random() * acoes.length)];
+            acaoAleatoria();
+            reproduzirBip();
+            reproduzirBip();
+        }
+
+        function gerarAnuncios() {
+            const container = document.getElementById('adsContainer');
+            container.innerHTML = '';
+
+            for (let i = 0; i < 25; i++) {
+                const adData = anunciosData[Math.floor(Math.random() * anunciosData.length)];
+                const ad = document.createElement('div');
+                ad.className = 'ad-banner';
+                ad.innerHTML = `
+                    <div class="ad-emoji">${adData.emoji}</div>
+                    <div class="ad-text">${adData.texto}</div>
+                    <div class="ad-price">💰 ${adData.preco}</div>
+                    <div style="font-size: 0.8em; margin-top: 10px; color: #ffff00;">👆 CLIQUE AQUI!</div>
+                `;
+                ad.style.animationDelay = (i * 0.1) + 's';
+                ad.onclick = (e) => {
+                    interacaoAnuncioEngracada(adData);
+                };
+                container.appendChild(ad);
+            }
+
+            estado.anunciosCount = 25;
+        }
+
+        function adicionarMaisAnuncios() {
+            const container = document.getElementById('adsContainer');
+            const quantidade = 5 + Math.floor(Math.random() * 5);
+
+            for (let i = 0; i < quantidade; i++) {
+                const adData = anunciosData[Math.floor(Math.random() * anunciosData.length)];
+                const ad = document.createElement('div');
+                ad.className = 'ad-banner';
+                ad.innerHTML = `
+                    <div class="ad-emoji">${adData.emoji}</div>
+                    <div class="ad-text">${adData.texto}</div>
+                    <div class="ad-price">💰 ${adData.preco}</div>
+                    <div style="font-size: 0.8em; margin-top: 10px; color: #ffff00;">👆 CLIQUE AQUI!</div>
+                `;
+                ad.onclick = (e) => {
+                    interacaoAnuncioEngracada(adData);
+                };
+                container.appendChild(ad);
+            }
+
+            estado.anunciosCount += quantidade;
+        }
+
+        // ===== CRONÔMETRO =====
+        function iniciarCronometro() {
+            console.log('⏱️ Iniciando cronômetro...');
+            let segundosPrevios = 0;
+            const interval = setInterval(() => {
+                if (!estado.pago) {
+                    const tempoDecorrido = Math.floor((Date.now() - estado.tempoInicio) / 1000);
+                    const minutos = Math.floor(tempoDecorrido / 60);
+                    const segundos = tempoDecorrido % 60;
+
+                    const timerFormatado = `${minutos}:${segundos.toString().padStart(2, '0')}`;
+                    const timerElement = document.getElementById('timer');
+                    if (timerElement) {
+                        timerElement.textContent = timerFormatado;
+                    }
+
+                    const novaFase = Math.floor(tempoDecorrido / 20) + 1;
+                    if (novaFase > estado.fase) {
+                        estado.fase = novaFase;
+                        mostrarPopup(`⚠️ FASE ${estado.fase}: INFERNO INTENSIFICADO! ⚠️`);
+                    }
+
+                    if (tempoDecorrido % 20 === 0 && tempoDecorrido > 0 && tempoDecorrido !== segundosPrevios) {
+                        adicionarMaisAnuncios();
+                        segundosPrevios = tempoDecorrido;
+                    }
+
+                    const velocidade = Math.max(0.5, 3 - estado.fase * 0.2);
+                    document.documentElement.style.setProperty('--animation-speed', velocidade);
+                } else {
+                    clearInterval(interval);
+                }
+            }, 1000);
+
+            estado.intervals.push(interval);
+        }
+
+        // ===== POP-UPS =====
+        function mostrarPopup(mensagem) {
+            console.log('💬 Mostrando popup:', mensagem);
+            const popup = document.createElement('div');
+            popup.className = 'random-message';
+            popup.textContent = mensagem;
+            popup.style.position = 'fixed';
+            popup.style.left = (Math.random() * 80 + 10) + '%';
+            popup.style.top = (Math.random() * 80 + 10) + '%';
+            popup.style.fontSize = '1.8em';
+            popup.style.color = '#' + Math.floor(Math.random()*16777215).toString(16);
+            popup.style.textShadow = '3px 3px 0 black';
+            popup.style.fontWeight = 'bold';
+            popup.style.zIndex = '9000';
+            document.body.appendChild(popup);
+
+            setTimeout(() => popup.remove(), 8000);
+        }
+
+        function iniciarPopups() {
+            console.log('🎪 Iniciando popups engraçados...');
+            const interval = setInterval(() => {
+                if (estado.pago) {
+                    clearInterval(interval);
+                    return;
+                }
+
+                const mensagensEngracadas = [
+                    '🤡 Sua mãe ligou, ela quer que você pague logo!',
+                    '🧠 Seu QI: 200. Sua paciência: 0',
+                    '👽 OVNI detectado... mas você ainda tá aqui!',
+                    '🍕 Pizza grátis se você pagar R$ 2,00!',
+                    '🦖 Dinossauros voltaram! Mas você continua preso aqui',
+                    '🎯 Você ganhou... NADA! Pague R$ 2,00',
+                    '👻 BOO! Assustou? Agora paga!',
+                    '🌈 No fim do arco-íris tem um botão PIX',
+                    '🔮 Vejo em meu futuro... você pagando R$ 2,00',
+                    '🎪 Bem-vindo ao circo dos horrores financeiros!',
+                    '🧙 Abracadabra! Ainda não pagou?',
+                    '🎲 Jogamos um dado: você perdeu. Pague.',
+                    '🎰 Jackpot! Você ganhou... mais anúncios!',
+                    '🦄 Unicórnios existem, mas seu dinheiro não',
+                    '🌮 Taco terça-feira cancelada. Motivo: você não pagou',
+                    '🎸 Rock n Roll! Mas primeiro: R$ 2,00',
+                    '🍦 Sorvete derretendo... sua paciência também',
+                    '🚀 SpaceX cancelou missão pra ver você sofrer',
+                    '🎭 Shakespeare disse: Pagar ou não pagar? PAGAR!',
+                    '🦅 Águia americana viu você. Não ficou orgulhosa.',
+                ];
+
+                mostrarPopup(mensagensEngracadas[Math.floor(Math.random() * mensagensEngracadas.length)]);
+                reproduzirBip();
+            }, 3000 + Math.random() * 4000);
+
+            estado.intervals.push(interval);
+        }
+
+        // ===== MENSAGENS ALEATÓRIAS =====
+        function criarMensagensAleatorias() {
+            console.log('📝 Iniciando mensagens aleatórias engraçadas...');
+            const mensagensEngracadas = [
+                '🤖 Elon Musk cancelou o Twitter pra ver você sofrer',
+                '🎮 Seu save foi corrompido... igual sua paciência',
+                '🐱 Seu gato julga suas escolhas de vida',
+                '☕ Café ficou frio. Assim como suas chances de sair',
+                '🌮 Taco Bell não entrega aqui. Nem esperança.',
+                '🎸 Guitar Hero: modo impossível ativado na vida real',
+                '🍔 McDonalds: máquina de sorvete quebrada. E você?',
+                '🎲 Dado de 20 lados: você tirou 1. Crítico!',
+                '🧙 Gandalf disse: Você não vai passar... sem pagar',
+                '🦸 Super-herói favorito: Homem-PIX',
+                '🎬 Netflix pergunta: você ainda está aí sofrendo?',
+                '🍿 Pipoca acabou. Show continua.',
+                '🎺 Trombones tristes tocando pra você',
+                '🦕 T-Rex tem braços curtos. Você tem paciência curta.',
+                '🌮 Nachos sem queijo = Você sem R$ 2,00',
+                '🎪 Circo dos horrores: plateia vazia, só você',
+                '🥤 Refil grátis! (De ansiedade)',
+                '🎯 Bullseye! Acertou o botão errado de novo',
+                '🦉 Coruja sábia diz: UHUUUU pague logo',
+                '🧃 Suco de caixinha: sua infância feliz antes disso',
+            ];
+
+            const interval = setInterval(() => {
+                if (estado.pago) {
+                    clearInterval(interval);
+                    return;
+                }
+
+                if (Math.random() > 0.3) {
+                    const mensagem = mensagensEngracadas[Math.floor(Math.random() * mensagensEngracadas.length)];
+                    const msg = document.createElement('div');
+                    msg.className = 'random-message';
+                    msg.textContent = mensagem;
+                    msg.style.position = 'fixed';
+                    msg.style.left = (Math.random() * 90) + '%';
+                    msg.style.top = (Math.random() * 90) + '%';
+                    msg.style.color = '#' + Math.floor(Math.random()*16777215).toString(16);
+                    msg.style.textShadow = '3px 3px 0 #000000';
+                    msg.style.fontSize = '1.5em';
+                    msg.style.zIndex = '9000';
+                    msg.style.fontWeight = 'bold';
+                    msg.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                    msg.style.padding = '15px';
+                    msg.style.borderRadius = '10px';
+                    msg.style.border = '3px solid ' + '#' + Math.floor(Math.random()*16777215).toString(16);
+                    document.body.appendChild(msg);
+
+                    reproduzirBip();
+                    setTimeout(() => msg.remove(), 4000);
+                }
+            }, 2000);
+
+            estado.intervals.push(interval);
+        }
+
+        // ===== BOTÕES PIX ADICIONAIS =====
+        function mostrarBotoesPixAdicionais() {
+            const timeout1 = setTimeout(() => {
+                if (!estado.pago) {
+                    document.getElementById('pixButton2').style.display = 'block';
+                    reproduzirBip();
+                    reproduzirBip();
+                }
+            }, 25000);
+
+            const timeout2 = setTimeout(() => {
+                if (!estado.pago) {
+                    document.getElementById('pixButton3').style.display = 'block';
+                    reproduzirBip();
+                    reproduzirBip();
+                    reproduzirBip();
+                }
+            }, 50000);
+
+            estado.intervals.push(timeout1);
+            estado.intervals.push(timeout2);
+        }
+
+        // ===== ÁUDIO =====
+        let audioContext = null;
+        
+        function inicializarAudio() {
+            if (!audioContext) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                } catch (e) {
+                    console.log('Áudio não disponível:', e);
+                }
+            }
+        }
+
+        function reproduzirBip() {
+            try {
+                if (!audioContext) {
+                    inicializarAudio();
+                }
+                
+                if (!audioContext || audioContext.state === 'suspended') {
+                    return; // Não toca som se o contexto não estiver ativo
+                }
+
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = 800 + Math.random() * 400;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } catch (e) {
+                // Silenciosamente ignora erros de áudio
+            }
+        }
+
+        // Inicializar áudio após o primeiro clique do usuário
+        document.addEventListener('click', inicializarAudio, { once: true });
+
+        // ===== PAGAMENTO =====
+        function fecharModal() {
+            document.getElementById('pixModal').classList.remove('show');
+        }
+
+        function copiarChavePix() {
+            const pixKey = document.getElementById('pixKey').textContent;
+            navigator.clipboard.writeText(pixKey);
+            alert('✅ Chave Pix copiada! Use em qualquer app de Pix');
+        }
+
+        // ===== CONFIGURAÇÃO STRIPE =====
+        let stripe = null;
+
+        // Carregar chave pública do servidor
+        async function inicializarStripe() {
+            try {
+                const response = await fetch('/config');
+                const { publicKey } = await response.json();
+                stripe = Stripe(publicKey);
+                console.log('✅ Stripe inicializado');
+            } catch (error) {
+                console.error('❌ Erro ao carregar configuração Stripe:', error);
+            }
+        }
+
+        // Inicializar Stripe ao carregar a página
+        inicializarStripe();
+
+        async function iniciarPagamentoStripe() {
+            if (!stripe) {
+                alert('⚠️ Aguarde, carregando sistema de pagamento...');
+                await inicializarStripe();
+                if (!stripe) {
+                    throw new Error('Falha ao inicializar Stripe');
+                }
+            }
+            try {
+                // Criar sessão de checkout no backend
+                const response = await fetch('/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        amount: 200, // R$ 2,00 em centavos
+                        currency: 'brl',
+                    }),
+                });
+
+                const session = await response.json();
+
+                // Redirecionar para checkout Stripe
+                const result = await stripe.redirectToCheckout({
+                    sessionId: session.id,
+                });
+
+                if (result.error) {
+                    alert('❌ Erro no pagamento: ' + result.error.message);
+                }
+            } catch (error) {
+                console.error('Erro ao iniciar pagamento:', error);
+                // Fallback para teste - remover em produção
+                if (confirm('⚠️ Backend não configurado.\n\nModo DEMO: Confirmar pagamento fictício?')) {
+                    confirmarPagamento();
+                }
+            }
+        }
+
+        // Verificar se retornou de um pagamento bem-sucedido
+        function verificarPagamentoStripe() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            if (urlParams.get('payment') === 'success') {
+                // Mostrar feedback visual
+                const loading = document.createElement('div');
+                loading.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: #00ff00;
+                    color: #000;
+                    padding: 40px;
+                    border: 5px solid #fff;
+                    z-index: 10000;
+                    font-size: 2em;
+                    text-align: center;
+                    font-weight: bold;
+                    border-radius: 20px;
+                    box-shadow: 0 0 50px rgba(0,255,0,0.8);
+                `;
+                loading.innerHTML = '✅<br>PAGAMENTO CONFIRMADO!<br><span style="font-size: 0.5em;">Processando...</span>';
+                document.body.appendChild(loading);
+                
+                setTimeout(() => {
+                    loading.remove();
+                    confirmarPagamento();
+                }, 1500);
+                
+                // Limpar URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else if (urlParams.get('payment') === 'cancelled') {
+                // Pagamento cancelado
+                alert('❌ Pagamento cancelado!\n\nVocê ainda está preso aqui! 😈');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        function validarPagamento() {
+            iniciarPagamentoStripe();
+        }
+
+        // ===== LIMPAR TODOS OS EVENTOS =====
+        function pararTodosOsEventos() {
+            estado.intervals.forEach(intervalId => {
+                clearInterval(intervalId);
+            });
+            estado.intervals = [];
+
+            const flutuantes = document.querySelectorAll('.random-message, .fake-notification, .multiplayer-notification');
+            flutuantes.forEach(el => el.remove());
+        }
+
+        function confirmarPagamento() {
+            pararTodosOsEventos();
+            criarConfete();
+
+            estado.pago = true;
+            estado.tempoFinal = Math.floor((Date.now() - estado.tempoInicio) / 1000);
+
+            localStorage.setItem('anuncioInfernal_pago', 'true');
+            localStorage.setItem('anuncioInfernal_tempo', estado.tempoFinal);
+
+            const nome = prompt('Qual é o seu nome (anônimo se cancelar)?') || 'Usuário Anônimo';
+            const ranking = JSON.parse(localStorage.getItem('anuncioInfernal_ranking') || '[]');
+            ranking.push({
+                nome: nome,
+                tempo: estado.tempoFinal
+            });
+            localStorage.setItem('anuncioInfernal_ranking', JSON.stringify(ranking));
+
+            document.getElementById('pixModal').classList.remove('show');
+
+            setTimeout(() => {
+                document.getElementById('infernoContainer').classList.add('pago');
+                document.getElementById('cronometroBar').classList.add('pago');
+                document.getElementById('pixButton').style.display = 'none';
+                document.getElementById('pixButton2').style.display = 'none';
+                document.getElementById('pixButton3').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'none';
+
+                mostrarTelaDeExito();
+            }, 500);
+        }
+
+        function mostrarTelaDeExito() {
+            const tempoFinal = estado.tempoFinal || parseInt(localStorage.getItem('anuncioInfernal_tempo')) || 0;
+            const minutos = Math.floor(tempoFinal / 60);
+            const segundos = tempoFinal % 60;
+            const tiempoFormatado = `${minutos}min${segundos.toString().padStart(2, '0')}s`;
+
+            document.getElementById('resistenceTime').textContent = `Você resistiu por ${tiempoFormatado}`;
+
+            const ranking = JSON.parse(localStorage.getItem('anuncioInfernal_ranking') || '[]');
+            const rankingListSuccess = document.getElementById('rankingListSuccess');
+
+            if (ranking.length > 0) {
+                ranking.sort((a, b) => b.tempo - a.tempo);
+                rankingListSuccess.innerHTML = ranking.slice(0, 10).map((item, index) => {
+                    const mins = Math.floor(item.tempo / 60);
+                    const secs = item.tempo % 60;
+                    const tempoFormatado = mins > 0 ? `${mins}min${secs}s` : `${secs}s`;
+
+                    return `<div class="ranking-item">🥇 ${index + 1}º - ${item.nome}: ${tempoFormatado}</div>`;
+                }).join('');
+            }
+
+            document.getElementById('successScreen').classList.add('show');
+        }
+
+        function compartilharDerrota() {
+            const texto = `Eu paguei R$ 2,00 para remover anúncios do AnuncioInfernal.com! Resistir por ${document.getElementById('resistenceTime').textContent}. Que tipo de internet criamos? 😅`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Anúncio Infernal',
+                    text: texto,
+                });
+            } else {
+                alert('Não é possível compartilhar, mas aqui está o texto:\n\n' + texto);
+            }
+        }
+
+        function voltarParaOInferno() {
+            localStorage.removeItem('anuncioInfernal_pago');
+            localStorage.removeItem('anuncioInfernal_inicio');
+            localStorage.removeItem('anuncioInfernal_tempo');
+            location.reload();
+        }
+
+        // ===== CONFETE =====
+        function criarConfete() {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.position = 'fixed';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = '-10px';
+                confetti.style.width = '15px';
+                confetti.style.height = '15px';
+                confetti.style.background = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'][Math.floor(Math.random() * 5)];
+                confetti.style.animation = 'confettiFall 3s ease-out forwards';
+                confetti.style.pointerEvents = 'none';
+                confetti.style.zIndex = '9000';
+                document.body.appendChild(confetti);
+
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        // ===== JOGO VIRAL =====
+        function mostrarJogoViral() {
+            if (estado.pago) return;
+
+            const mensagensJogo = [
+                '🎮 VOCÊ MARCOU UM PONTO!\n(Mas nada muda)',
+                '💯 PARABÉNS! Você é fraco.',
+                '🎯 Errou! Tente de novo.',
+                '❌ Falhou miseravelmente!',
+            ];
+
+            for (let i = 0; i < 9; i++) {
+                setTimeout(() => {
+                    if (!estado.pago) {
+                        const msg = mensagensJogo[Math.floor(Math.random() * mensagensJogo.length)];
+                        mostrarPopup(msg);
+                        reproduzirBip();
+                    }
+                }, i * 1000);
+            }
+        }
+
+        // ===== FAKE PROGRESS =====
+        function mostrarFakeProgress() {
+            if (estado.pago) return;
+
+            const messages = [
+                'Detectados: 3.247 vírus',
+                'Limpando: 1.542 cookies',
+                'Reparando: 823 erros',
+                'Atualizando: 15 drivers',
+                'Finalizando...',
+            ];
+
+            messages.forEach((msg, index) => {
+                setTimeout(() => {
+                    if (!estado.pago) {
+                        mostrarPopup('🔧 ' + msg);
+                    }
+                }, index * 1500);
+            });
+        }
+
+        // ===== GLITCH SCREEN =====
+        function mostrarGlitch() {
+            if (estado.pago) return;
+
+            const glitchDiv = document.createElement('div');
+            glitchDiv.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: repeating-linear-gradient(
+                    0deg,
+                    rgba(255, 0, 0, 0.3) 0px,
+                    rgba(255, 0, 0, 0.3) 2px,
+                    transparent 2px,
+                    transparent 4px
+                );
+                z-index: 9500;
+                animation: glitchFlash 0.1s infinite;
+            `;
+            document.body.appendChild(glitchDiv);
+
+            setTimeout(() => {
+                glitchDiv.remove();
+                mostrarPopup('⚠️ ERRO CRÍTICO DETECTADO\n\nMas você pode resolver com R$ 2,00');
+            }, 2000);
+        }
+
+        // ===== NOTIFICAÇÕES FALSAS =====
+        function iniciarNotificacoesFalsas() {
+            const notificacoes = [
+                '⚠️ [NORTON] Ameaça detectada!',
+                '❌ Erro crítico do sistema',
+                '💻 Seu PC está lento',
+                '🚨 Alerta de segurança urgente',
+                '📱 Nova atualização disponível',
+                '☢️ Radiação detectada',
+                '💥 Meltdown iminente',
+            ];
+
+            const interval = setInterval(() => {
+                if (estado.pago) {
+                    clearInterval(interval);
+                    return;
+                }
+
+                if (Math.random() > 0.75) {
+                    const notif = notificacoes[Math.floor(Math.random() * notificacoes.length)];
+                    const notification = document.createElement('div');
+                    notification.className = 'fake-notification';
+                    notification.textContent = notif;
+                    notification.style.top = Math.random() * 20 + 'px';
+                    notification.style.right = '20px';
+                    document.body.appendChild(notification);
+
+                    reproduzirBip();
+                    setTimeout(() => notification.remove(), 4000);
+                }
+            }, 8000);
+
+            estado.intervals.push(interval);
+        }
+
+        // ===== NOTIFICAÇÕES MULTIPLAYER =====
+        function iniciarMultiplayerNotificacoes() {
+            const nomes = ['João', 'Maria', 'Pedro', 'Ana', 'Carlos', 'Fernanda'];
+            const tempos = ['2min', '1min', '30s', '5min', '45s'];
+            const mensagens = ['resistiu por', 'desistiu depois de', 'foi enlouquecido em'];
+
+            const interval = setInterval(() => {
+                if (estado.pago) {
+                    clearInterval(interval);
+                    return;
+                }
+
+                if (Math.random() > 0.8) {
+                    const nome = nomes[Math.floor(Math.random() * nomes.length)];
+                    const tempo = tempos[Math.floor(Math.random() * tempos.length)];
+                    const msg = mensagens[Math.floor(Math.random() * mensagens.length)];
+
+                    const notif = document.createElement('div');
+                    notif.className = 'multiplayer-notification';
+                    notif.innerHTML = `<strong>${nome}</strong> ${msg} ${tempo}!`;
+                    document.body.appendChild(notif);
+
+                    reproduzirBip();
+                    setTimeout(() => notif.remove(), 5000);
+                }
+            }, 12000);
+
+            estado.intervals.push(interval);
+        }
+    </script>
+</body>
+</html>
