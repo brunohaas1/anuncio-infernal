@@ -937,7 +937,9 @@
             },
             conquistas: [],
             intervalId: null,
-            autoSaveId: null
+            autoSaveId: null,
+            miniGameIntervalId: null,
+            jogoAtivo: null
         };
 
         const CONQUISTAS_CLICKER = {
@@ -1152,6 +1154,11 @@
         }
 
         function resetarMiniJogoAds() {
+            if (miniJogoAds.miniGameIntervalId) {
+                clearInterval(miniJogoAds.miniGameIntervalId);
+                miniJogoAds.miniGameIntervalId = null;
+            }
+            miniJogoAds.jogoAtivo = null;
             miniJogoAds.pontos = 0;
             miniJogoAds.totalCliques = 0;
             miniJogoAds.porClique = 1;
@@ -1818,55 +1825,172 @@
             reproduzirBip();
         }
 
-        function custoCursor() {
-            return 25 + (miniJogoAds.autoClickers * 20);
-        }
-
-        function custoMegafone() {
-            return 40 + ((miniJogoAds.porClique - 1) * 35);
-        }
-
-        function atualizarUIJogoAnuncios() {
-            const pontosEl = document.getElementById('jgPontos');
-            if (!pontosEl) return;
-
-            document.getElementById('jgPontos').textContent = miniJogoAds.pontos;
-            document.getElementById('jgCliques').textContent = miniJogoAds.totalCliques;
-            document.getElementById('jgPorClique').textContent = miniJogoAds.porClique;
-            document.getElementById('jgAuto').textContent = miniJogoAds.autoClickers;
-            document.getElementById('jgCustoCursor').textContent = custoCursor();
-            document.getElementById('jgCustoMega').textContent = custoMegafone();
-        }
-
-        function clicarNoAnuncioGigante() {
-            miniJogoAds.totalCliques += 1;
-            miniJogoAds.pontos += miniJogoAds.porClique;
-            atualizarUIJogoAnuncios();
-
-            if (miniJogoAds.totalCliques % 50 === 0) {
-                mostrarMensagemClique('🎯 MARCO ALCANÇADO!', `Você já clicou ${miniJogoAds.totalCliques} vezes no anúncio gigante!`);
+        function limparMiniAreaJogo() {
+            if (miniJogoAds.miniGameIntervalId) {
+                clearInterval(miniJogoAds.miniGameIntervalId);
+                miniJogoAds.miniGameIntervalId = null;
             }
+            miniJogoAds.jogoAtivo = null;
+            const area = document.getElementById('jgMiniArea');
+            if (area) area.innerHTML = '<div>Escolha um mini-jogo de anúncios abaixo 👇</div>';
         }
 
-        function comprarUpgradeJogo(tipo) {
-            if (tipo === 'cursor') {
-                const custo = custoCursor();
-                if (miniJogoAds.pontos < custo) return;
-                miniJogoAds.pontos -= custo;
-                miniJogoAds.autoClickers += 1;
-            }
+        function iniciarMiniJogoCorridaBanner() {
+            const area = document.getElementById('jgMiniArea');
+            if (!area) return;
+            limparMiniAreaJogo();
+            miniJogoAds.jogoAtivo = 'corrida-banner';
 
-            if (tipo === 'megafone') {
-                const custo = custoMegafone();
-                if (miniJogoAds.pontos < custo) return;
-                miniJogoAds.pontos -= custo;
-                miniJogoAds.porClique += 1;
-            }
+            let tempo = 12;
+            let acertos = 0;
 
-            atualizarUIJogoAnuncios();
+            area.innerHTML = `
+                <div><strong>🏃 Corrida do Banner</strong> — clique no banner fugitivo antes do tempo acabar!</div>
+                <div id="jgTimerCorrida" style="margin-top: 6px;">Tempo: 12s | Acertos: 0</div>
+                <div id="jgArenaCorrida" style="margin-top: 8px; position: relative; height: 180px; border: 1px dashed rgba(255,255,255,0.4); border-radius: 10px;"></div>
+            `;
+
+            const arena = document.getElementById('jgArenaCorrida');
+            const btn = document.createElement('button');
+            btn.textContent = '📢 BANNER!';
+            btn.style.cssText = 'position:absolute; border:none; border-radius:8px; padding:8px 10px; background:#00ffff; color:#111; font-weight:bold; cursor:pointer;';
+            arena.appendChild(btn);
+
+            const mover = () => {
+                btn.style.left = Math.floor(Math.random() * 75) + '%';
+                btn.style.top = Math.floor(Math.random() * 70) + '%';
+            };
+
+            btn.addEventListener('click', () => {
+                acertos += 1;
+                miniJogoAds.pontos += 12;
+                ganharXP(1);
+                document.getElementById('jgTimerCorrida').textContent = `Tempo: ${tempo}s | Acertos: ${acertos}`;
+                atualizarUIJogoAnuncios();
+                mover();
+            });
+
+            mover();
+            miniJogoAds.miniGameIntervalId = setInterval(() => {
+                tempo -= 1;
+                const timer = document.getElementById('jgTimerCorrida');
+                if (timer) timer.textContent = `Tempo: ${tempo}s | Acertos: ${acertos}`;
+
+                if (tempo <= 0) {
+                    clearInterval(miniJogoAds.miniGameIntervalId);
+                    miniJogoAds.miniGameIntervalId = null;
+                    const bonus = acertos >= 15 ? 180 : acertos * 8;
+                    miniJogoAds.pontos += bonus;
+                    mostrarMensagemClique('🏁 Corrida encerrada', `Acertos: ${acertos}\nBônus: +${bonus} pontos`);
+                    atualizarUIJogoAnuncios();
+                    miniJogoAds.jogoAtivo = null;
+                }
+            }, 1000);
+        }
+
+        function iniciarMiniJogoLeilao() {
+            const area = document.getElementById('jgMiniArea');
+            if (!area) return;
+            limparMiniAreaJogo();
+            miniJogoAds.jogoAtivo = 'leilao';
+
+            const alvo = 100 + Math.floor(Math.random() * 900);
+            let tentativas = 5;
+
+            area.innerHTML = `
+                <div><strong>💸 Leilão Relâmpago</strong> — acerte o preço secreto do anúncio (${100}-${999})</div>
+                <div id="jgLeilaoStatus" style="margin-top: 6px;">Tentativas: 5</div>
+                <div style="margin-top:8px; display:flex; gap:8px;">
+                    <input id="jgLeilaoInput" type="number" min="100" max="999" style="flex:1; border-radius:8px; border:1px solid #ccc; padding:8px;" placeholder="Digite seu lance" />
+                    <button id="jgLeilaoBtn" style="border:none; border-radius:8px; padding:8px 10px; background:#00ffff; color:#111; font-weight:bold; cursor:pointer;">Enviar</button>
+                </div>
+                <div id="jgLeilaoDica" style="margin-top:8px;"></div>
+            `;
+
+            document.getElementById('jgLeilaoBtn').addEventListener('click', () => {
+                const input = document.getElementById('jgLeilaoInput');
+                const dica = document.getElementById('jgLeilaoDica');
+                const status = document.getElementById('jgLeilaoStatus');
+                const valor = parseInt(input.value, 10);
+                if (Number.isNaN(valor)) return;
+
+                tentativas -= 1;
+                status.textContent = `Tentativas: ${tentativas}`;
+
+                if (valor === alvo) {
+                    miniJogoAds.pontos += 220;
+                    ganharXP(8);
+                    dica.textContent = '🎯 Acertou em cheio! +220 pontos';
+                    atualizarUIJogoAnuncios();
+                    miniJogoAds.jogoAtivo = null;
+                    return;
+                }
+
+                dica.textContent = valor < alvo ? '⬆️ Mais alto!' : '⬇️ Mais baixo!';
+
+                if (tentativas <= 0) {
+                    const distancia = Math.abs(valor - alvo);
+                    const bonus = distancia <= 30 ? 90 : distancia <= 80 ? 45 : 15;
+                    miniJogoAds.pontos += bonus;
+                    ganharXP(3);
+                    dica.textContent = `Fim! Preço era ${alvo}. Você ganhou +${bonus} pontos.`;
+                    atualizarUIJogoAnuncios();
+                    miniJogoAds.jogoAtivo = null;
+                }
+            });
+        }
+
+        function iniciarMiniJogoCacaPopup() {
+            const area = document.getElementById('jgMiniArea');
+            if (!area) return;
+            limparMiniAreaJogo();
+            miniJogoAds.jogoAtivo = 'caca-popup';
+
+            let rodada = 1;
+            let acertos = 0;
+            const totalRodadas = 8;
+
+            const render = () => {
+                const alvo = Math.floor(Math.random() * 9);
+                area.innerHTML = `
+                    <div><strong>🧨 Caça-popup</strong> — encontre o popup correto (${rodada}/${totalRodadas})</div>
+                    <div style="margin-top:6px;">Acertos: ${acertos}</div>
+                    <div id="jgGridPopup" style="margin-top:8px; display:grid; grid-template-columns: repeat(3, 1fr); gap:6px;"></div>
+                `;
+
+                const grid = document.getElementById('jgGridPopup');
+                for (let i = 0; i < 9; i++) {
+                    const b = document.createElement('button');
+                    b.textContent = '🪟';
+                    b.style.cssText = 'border:none; border-radius:8px; padding:10px; background:#333; color:#fff; cursor:pointer;';
+                    b.addEventListener('click', () => {
+                        if (i === alvo) {
+                            acertos += 1;
+                            miniJogoAds.pontos += 30;
+                            ganharXP(2);
+                        }
+
+                        rodada += 1;
+                        if (rodada > totalRodadas) {
+                            const bonus = acertos * 12;
+                            miniJogoAds.pontos += bonus;
+                            mostrarMensagemClique('✅ Caça-popup finalizado', `Acertos: ${acertos}/${totalRodadas}\nBônus: +${bonus} pontos`);
+                            atualizarUIJogoAnuncios();
+                            miniJogoAds.jogoAtivo = null;
+                        } else {
+                            atualizarUIJogoAnuncios();
+                            render();
+                        }
+                    });
+                    grid.appendChild(b);
+                }
+            };
+
+            render();
         }
 
         function fecharMiniJogoAnuncios() {
+            limparMiniAreaJogo();
             const modal = document.getElementById('miniJogoAdsModal');
             if (modal) modal.remove();
             if (miniJogoAds.intervalId) {
@@ -1933,6 +2057,15 @@
                                 <div>+2% chance de clique crítico</div>
                                 <button id="jgCompraDourado">Comprar (<span id="jgCustoDourado">220</span>)</button>
                             </div>
+                            <div class="clicker-upgrade">
+                                <strong>🎮 MINI JOGOS EXTRAS</strong>
+                                <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
+                                    <button id="jgMiniCorrida">🏃 Corrida do Banner</button>
+                                    <button id="jgMiniLeilao">💸 Leilão Relâmpago</button>
+                                    <button id="jgMiniPopup">🧨 Caça-popup</button>
+                                </div>
+                                <div id="jgMiniArea" style="margin-top:8px; background: rgba(255,255,255,0.05); border:1px dashed rgba(255,255,255,0.28); border-radius:10px; padding:8px; min-height:90px;">Escolha um mini-jogo de anúncios abaixo 👇</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1949,6 +2082,10 @@
             document.getElementById('jgCompraViral').addEventListener('click', () => comprarUpgradeJogo('algoritmoViral'));
             document.getElementById('jgCompraDourado').addEventListener('click', () => comprarUpgradeJogo('bannerDourado'));
             document.getElementById('jgReset').addEventListener('click', resetarMiniJogoAds);
+
+            document.getElementById('jgMiniCorrida').addEventListener('click', iniciarMiniJogoCorridaBanner);
+            document.getElementById('jgMiniLeilao').addEventListener('click', iniciarMiniJogoLeilao);
+            document.getElementById('jgMiniPopup').addEventListener('click', iniciarMiniJogoCacaPopup);
 
             modal.addEventListener('click', (event) => {
                 if (event.target === modal) fecharMiniJogoAnuncios();
