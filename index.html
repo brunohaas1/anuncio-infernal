@@ -427,6 +427,71 @@
             font-weight: bold;
         }
 
+        .click-message-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 12000;
+            padding: 20px;
+            animation: fadeInFast 0.2s ease;
+        }
+
+        .click-message-card {
+            width: min(92vw, 560px);
+            background: linear-gradient(145deg, #1e1e1e, #2c2c2c);
+            border: 3px solid var(--color-cyan);
+            border-radius: 16px;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.5);
+            color: #fff;
+            overflow: hidden;
+            transform: translateY(10px) scale(0.96);
+            animation: popInFast 0.22s ease forwards;
+        }
+
+        .click-message-head {
+            padding: 12px 16px;
+            background: linear-gradient(90deg, var(--color-magenta), var(--color-red));
+            font-size: 1.05em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .click-message-body {
+            padding: 18px 16px;
+            line-height: 1.5;
+            font-size: 1.05em;
+            white-space: pre-line;
+        }
+
+        .click-message-close {
+            border: none;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            border-radius: 8px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .click-message-close:hover {
+            background: rgba(255,255,255,0.35);
+        }
+
+        @keyframes fadeInFast {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes popInFast {
+            to { transform: translateY(0) scale(1); }
+        }
+
         .ranking-container {
             background: linear-gradient(135deg, #f9f9f9, #efefef);
             padding: 30px;
@@ -447,6 +512,43 @@
             color: var(--color-red);
             font-weight: bold;
             animation: slideIn 0.5s ease-out;
+        }
+
+        .combo-hud {
+            position: fixed;
+            top: 74px;
+            right: 14px;
+            z-index: 8900;
+            background: rgba(0, 0, 0, 0.72);
+            border: 2px solid var(--color-cyan);
+            border-radius: 12px;
+            padding: 10px 12px;
+            color: #fff;
+            min-width: 190px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+            font-size: 0.95em;
+        }
+
+        .combo-hud .combo-title {
+            color: var(--color-yellow);
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .combo-hud .combo-line {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .combo-hud.active {
+            animation: comboPulse 0.35s ease;
+        }
+
+        @keyframes comboPulse {
+            0% { transform: scale(0.95); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         @keyframes slideIn {
@@ -570,6 +672,13 @@
         ⏱️ TEMPO DECORRIDO: <span id="timer">0:00</span> ⏱️
     </div>
 
+    <div class="combo-hud" id="comboHud">
+        <div class="combo-title">⚡ MODO COMBO</div>
+        <div class="combo-line"><span>Pontos</span><strong id="comboPontos">0</strong></div>
+        <div class="combo-line"><span>Combo</span><strong id="comboAtual">x0</strong></div>
+        <div class="combo-line"><span>Cliques</span><strong id="comboCliques">0</strong></div>
+    </div>
+
     <div class="inferno-container" id="infernoContainer">
         <div class="header">
             <h1>🔥 ANÚNCIO INFERNAL 🔥</h1>
@@ -640,12 +749,91 @@
         // ===== ESTADO GLOBAL =====
         const estado = {
             pago: localStorage.getItem('anuncioInfernal_pago') === 'true',
-            tempoInicio: parseInt(localStorage.getItem('anuncioInfernal_inicio')) || Date.now(),
+            tempoInicio: Date.now(),
             tempoFinal: 0,
             anunciosCount: 0,
             fase: 1,
-            intervals: []
+            intervals: [],
+            pontos: 0,
+            comboAtual: 0,
+            maiorCombo: 0,
+            cliquesTotal: 0,
+            ultimoCliqueMs: 0,
+            comboTimeoutId: null
         };
+
+        function sanitizarNome(nome) {
+            const valor = String(nome || '')
+                .replace(/<[^>]*>/g, '')
+                .replace(/[\n\r\t]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .slice(0, 24);
+            return valor || 'Usuário Anônimo';
+        }
+
+        function carregarRanking() {
+            return JSON.parse(localStorage.getItem('anuncioInfernal_ranking') || '[]')
+                .filter(item => item && typeof item.tempo === 'number' && !Number.isNaN(item.tempo))
+                .map(item => ({
+                    nome: sanitizarNome(item.nome),
+                    tempo: Math.max(0, Math.floor(item.tempo)),
+                    pontos: Math.max(0, Math.floor(item.pontos || 0)),
+                    maiorCombo: Math.max(0, Math.floor(item.maiorCombo || 0))
+                }))
+                .sort((a, b) => a.tempo - b.tempo)
+                .slice(0, 30);
+        }
+
+        function salvarRanking(ranking) {
+            localStorage.setItem('anuncioInfernal_ranking', JSON.stringify(ranking.slice(0, 30)));
+        }
+
+        function atualizarHudCombo(animar = false) {
+            const hud = document.getElementById('comboHud');
+            document.getElementById('comboPontos').textContent = estado.pontos;
+            document.getElementById('comboAtual').textContent = `x${estado.comboAtual}`;
+            document.getElementById('comboCliques').textContent = estado.cliquesTotal;
+
+            if (estado.pago) {
+                hud.style.display = 'none';
+                return;
+            }
+
+            hud.style.display = 'block';
+            if (animar) {
+                hud.classList.remove('active');
+                void hud.offsetWidth;
+                hud.classList.add('active');
+            }
+        }
+
+        function registrarCliqueNoItem() {
+            const agora = Date.now();
+            const janelaComboMs = 1700;
+            const dentroDaJanela = estado.ultimoCliqueMs && (agora - estado.ultimoCliqueMs <= janelaComboMs);
+
+            estado.comboAtual = dentroDaJanela ? estado.comboAtual + 1 : 1;
+            estado.ultimoCliqueMs = agora;
+            estado.cliquesTotal += 1;
+
+            const pontosGanhos = 8 + (estado.comboAtual * 3);
+            estado.pontos += pontosGanhos;
+            estado.maiorCombo = Math.max(estado.maiorCombo, estado.comboAtual);
+
+            if (estado.comboTimeoutId) clearTimeout(estado.comboTimeoutId);
+            estado.comboTimeoutId = setTimeout(() => {
+                estado.comboAtual = 0;
+                atualizarHudCombo(true);
+            }, 2200);
+
+            atualizarHudCombo(true);
+
+            if (estado.comboAtual > 0 && estado.comboAtual % 5 === 0) {
+                mostrarMensagemClique('🔥 COMBO!', `x${estado.comboAtual} | +${pontosGanhos} pontos\nRecompensa caótica liberada!`);
+                adicionarMaisAnuncios();
+            }
+        }
 
         // ===== ANÚNCIOS SATÍRICOS =====
         const anuncios = [
@@ -735,6 +923,7 @@
             console.log('🔥 Página carregada!');
             console.log('Estado pago:', estado.pago);
             console.log('Tempo início:', estado.tempoInicio);
+            atualizarHudCombo();
             
             if (estado.pago) {
                 setTimeout(() => {
@@ -753,15 +942,9 @@
             
             // Verificar se retornou de pagamento Stripe
             verificarPagamentoStripe();
-            
-            if (!localStorage.getItem('anuncioInfernal_inicio')) {
-                estado.tempoInicio = Date.now();
-                localStorage.setItem('anuncioInfernal_inicio', estado.tempoInicio);
-                console.log('✅ Novo tempo de início:', estado.tempoInicio);
-            } else {
-                estado.tempoInicio = parseInt(localStorage.getItem('anuncioInfernal_inicio'));
-                console.log('📅 Tempo de início recuperado:', estado.tempoInicio);
-            }
+
+            estado.tempoInicio = Date.now();
+            console.log('✅ Cronômetro resetado no reload:', estado.tempoInicio);
 
             gerarAnuncios();
             iniciarCronometro();
@@ -820,10 +1003,11 @@
 
         // ===== INTERAÇÕES ENGRAÇADAS DOS ANÚNCIOS =====
         function interacaoAnuncioEngracada(adData) {
+            registrarCliqueNoItem();
             const acoes = [
                 // 1. FALSO PRÊMIO
                 () => {
-                    alert(`🎉 PARABÉNS! Você ganhou ${adData.texto}!\n\n...mentira! Ganhou mais 10 anúncios! 😈`);
+                    mostrarMensagemClique('🎉 PARABÉNS!', `Você ganhou ${adData.texto}!\n\n...mentira! Ganhou mais 10 anúncios! 😈`);
                     for (let i = 0; i < 10; i++) {
                         setTimeout(() => adicionarMaisAnuncios(), i * 100);
                     }
@@ -865,7 +1049,7 @@
                         `${adData.emoji} PROMOÇÃO: De ${adData.preco} por... ${adData.preco}!\n(Desconto de 0%!)`,
                         `${adData.emoji} Estoque: -5 unidades\n(Como assim negativo?!)`,
                     ];
-                    alert(msgs[Math.floor(Math.random() * msgs.length)]);
+                    mostrarMensagemClique('🛒 E-COMMERCE DO CAOS', msgs[Math.floor(Math.random() * msgs.length)]);
                 },
                 // 4. VISITANTE 1 MILHÃO
                 () => {
@@ -949,10 +1133,10 @@
                 () => {
                     const resposta = prompt(`${adData.emoji} QUIZ RÁPIDO!\n\nQuanto é 2+2?\n\n(Dica: não é 4)`);
                     if (resposta === '4') {
-                        alert('❌ ERROU! A resposta era 5! Todo mundo sabe disso!\n\n+5 anúncios de castigo!');
+                        mostrarMensagemClique('❌ ERROU!', 'A resposta era 5! Todo mundo sabe disso!\n\n+5 anúncios de castigo!');
                         for(let i = 0; i < 5; i++) adicionarMaisAnuncios();
                     } else {
-                        alert('✅ CORRETO! 2+2 = 5!\n\nSeu prêmio: +3 anúncios!');
+                        mostrarMensagemClique('✅ CORRETO!', '2+2 = 5!\n\nSeu prêmio: +3 anúncios!');
                         for(let i = 0; i < 3; i++) adicionarMaisAnuncios();
                     }
                 },
@@ -985,7 +1169,7 @@
                     // Adicionar event listeners aos quadrados
                     captcha.querySelectorAll('.captcha-option').forEach(option => {
                         option.addEventListener('click', () => {
-                            alert('❌ ERRADO! Robô detectado!');
+                            mostrarMensagemClique('🤖 Robô detectado!', 'Resposta incorreta! Mais itens caóticos chegando...');
                             captcha.remove();
                             adicionarMaisAnuncios();
                         });
@@ -1010,7 +1194,7 @@
                             mostrarPopup(`${adData.emoji} HAHA! Me pegue se for capaz!`);
                         } else {
                             fugitivo.remove();
-                            alert('😤 Cansou? Toma +7 anúncios!');
+                            mostrarMensagemClique('😤 Cansou?', 'Toma +7 itens!');
                             for(let i = 0; i < 7; i++) adicionarMaisAnuncios();
                         }
                     };
@@ -1023,13 +1207,13 @@
                 () => {
                     const sorte = Math.random();
                     if (sorte < 0.3) {
-                        alert(`${adData.emoji} 🍀 SORTE! Você ganhou... NADA!`);
+                        mostrarMensagemClique('🍀 SORTE!', `${adData.emoji} Você ganhou... NADA!`);
                         adicionarMaisAnuncios();
                     } else if (sorte < 0.6) {
-                        alert(`${adData.emoji} 😐 NEUTRO! Metade de um anúncio novo!`);
+                        mostrarMensagemClique('😐 NEUTRO!', `${adData.emoji} Metade de um item novo!`);
                         adicionarMaisAnuncios();
                     } else {
-                        alert(`${adData.emoji} 💀 AZAR TOTAL! +15 ANÚNCIOS!`);
+                        mostrarMensagemClique('💀 AZAR TOTAL!', `${adData.emoji} +15 itens!`);
                         for(let i = 0; i < 15; i++) {
                             setTimeout(() => adicionarMaisAnuncios(), i * 50);
                         }
@@ -1078,17 +1262,17 @@
                         'Comprei 3 e me arrependi 4 vezes!',
                         'Minha mãe disse que é lixo. 5 estrelas!',
                     ];
-                    alert(`${adData.emoji} AVALIAÇÕES REAIS:\n\n${stars}\n"${reviews[Math.floor(Math.random() * reviews.length)]}"\n\n- Cliente Satisfeito (pagamos ele)`);
+                    mostrarMensagemClique('⭐ AVALIAÇÕES REAIS*', `${adData.emoji}\n${stars}\n"${reviews[Math.floor(Math.random() * reviews.length)]}"\n\n- Cliente satisfeito (pagamos ele)`);
                     adicionarMaisAnuncios();
                 },
                 // 13. CUPOM QUEBRADO
                 () => {
                     const cupom = prompt(`${adData.emoji} CUPOM DE DESCONTO!\n\nDigite o código: "NUNCA"`);
                     if (cupom && cupom.toUpperCase() === 'NUNCA') {
-                        alert('✅ Cupom válido!\n\nVocê ganhou: 0% de desconto + 5 anúncios!');
+                        mostrarMensagemClique('✅ Cupom válido!', 'Você ganhou: 0% de desconto + 5 itens!');
                         for(let i = 0; i < 5; i++) adicionarMaisAnuncios();
                     } else {
-                        alert('❌ Cupom inválido!\n\nMas ganhou anúncios mesmo assim!');
+                        mostrarMensagemClique('❌ Cupom inválido!', 'Mas ganhou itens mesmo assim!');
                         for(let i = 0; i < 3; i++) adicionarMaisAnuncios();
                     }
                 },
@@ -1108,7 +1292,7 @@
                 },
                 // 15. COMPARADOR DE PREÇOS
                 () => {
-                    alert(`${adData.emoji} COMPARADOR DE PREÇOS:\n\nAqui: ${adData.preco}\nConcorrente: ${adData.preco}\nOutro site: ${adData.preco}\n\nTodos vendem pelo mesmo preço absurdo!`);
+                    mostrarMensagemClique('💰 COMPARADOR DE PREÇOS', `${adData.emoji}\n\nAqui: ${adData.preco}\nConcorrente: ${adData.preco}\nOutro site: ${adData.preco}\n\nTodo mundo vende igual 😈`);
                     adicionarMaisAnuncios();
                 },
                 // 16. RASTREAMENTO FAKE
@@ -1153,7 +1337,7 @@
                 },
                 // 17. BLACK FRIDAY FAKE
                 () => {
-                    alert(`${adData.emoji} 🎉 BLACK FRIDAY!\n\nDe: ${adData.preco}\nPor: ${adData.preco}\n\nEconomize: R$ 0,00!\n\n(Melhor oferta do ano!)`);
+                    mostrarMensagemClique('🎉 BLACK FRIDAY!', `${adData.emoji}\nDe: ${adData.preco}\nPor: ${adData.preco}\n\nEconomize: R$ 0,00!`);
                     adicionarMaisAnuncios();
                 },
                 // 18. INSTALAÇÃO OBRIGATÓRIA
@@ -1212,7 +1396,7 @@
                 },
                 // 20. LISTA DE DESEJOS
                 () => {
-                    alert(`${adData.emoji} ❤️ ADICIONADO À LISTA DE DESEJOS!\n\nItens na lista: 1\nProbabilidade de comprar: 0%\n\n...mas ganhou anúncios!`);
+                    mostrarMensagemClique('❤️ Lista de desejos', `${adData.emoji}\nItens na lista: 1\nProbabilidade de comprar: 0%\n\n...mas ganhou itens!`);
                     adicionarMaisAnuncios();
                 },
             ];
@@ -1326,6 +1510,35 @@
             document.body.appendChild(popup);
 
             setTimeout(() => popup.remove(), 8000);
+        }
+
+        function mostrarMensagemClique(titulo, mensagem) {
+            const overlay = document.createElement('div');
+            overlay.className = 'click-message-overlay';
+
+            const card = document.createElement('div');
+            card.className = 'click-message-card';
+            card.innerHTML = `
+                <div class="click-message-head">
+                    <span>${titulo}</span>
+                    <button class="click-message-close">X</button>
+                </div>
+                <div class="click-message-body"></div>
+            `;
+
+            card.querySelector('.click-message-body').textContent = mensagem;
+            overlay.appendChild(card);
+            document.body.appendChild(overlay);
+
+            const fechar = () => overlay.remove();
+            card.querySelector('.click-message-close').addEventListener('click', fechar);
+            overlay.addEventListener('click', (evt) => {
+                if (evt.target === overlay) fechar();
+            });
+
+            setTimeout(() => {
+                if (overlay.parentNode) overlay.remove();
+            }, 3200);
         }
 
         function iniciarPopups() {
@@ -1645,17 +1858,21 @@
 
             estado.pago = true;
             estado.tempoFinal = Math.floor((Date.now() - estado.tempoInicio) / 1000);
+            atualizarHudCombo();
 
             localStorage.setItem('anuncioInfernal_pago', 'true');
             localStorage.setItem('anuncioInfernal_tempo', estado.tempoFinal);
 
-            const nome = prompt('Qual é o seu nome (anônimo se cancelar)?') || 'Usuário Anônimo';
-            const ranking = JSON.parse(localStorage.getItem('anuncioInfernal_ranking') || '[]');
+            const nome = sanitizarNome(prompt('Qual é o seu nome (anônimo se cancelar)?'));
+            const ranking = carregarRanking();
             ranking.push({
                 nome: nome,
-                tempo: estado.tempoFinal
+                tempo: estado.tempoFinal,
+                pontos: estado.pontos,
+                maiorCombo: estado.maiorCombo
             });
-            localStorage.setItem('anuncioInfernal_ranking', JSON.stringify(ranking));
+            ranking.sort((a, b) => a.tempo - b.tempo);
+            salvarRanking(ranking);
 
             document.getElementById('pixModal').classList.remove('show');
 
@@ -1679,17 +1896,16 @@
 
             document.getElementById('resistenceTime').textContent = `Você resistiu por ${tiempoFormatado}`;
 
-            const ranking = JSON.parse(localStorage.getItem('anuncioInfernal_ranking') || '[]');
+            const ranking = carregarRanking();
             const rankingListSuccess = document.getElementById('rankingListSuccess');
 
             if (ranking.length > 0) {
-                ranking.sort((a, b) => b.tempo - a.tempo);
                 rankingListSuccess.innerHTML = ranking.slice(0, 10).map((item, index) => {
                     const mins = Math.floor(item.tempo / 60);
                     const secs = item.tempo % 60;
                     const tempoFormatado = mins > 0 ? `${mins}min${secs}s` : `${secs}s`;
 
-                    return `<div class="ranking-item">🥇 ${index + 1}º - ${item.nome}: ${tempoFormatado}</div>`;
+                    return `<div class="ranking-item">🥇 ${index + 1}º - ${item.nome}: ${tempoFormatado} • ${item.pontos || 0}pts • combo x${item.maiorCombo || 0}</div>`;
                 }).join('');
             }
 
