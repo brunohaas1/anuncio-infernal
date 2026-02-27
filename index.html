@@ -3,8 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Anúncio Infernal: uma paródia caótica da internet com mini-game, humor e fuga por R$ 2,00.">
+    <meta name="theme-color" content="#ff00ff">
     <title>ANÚNCIO INFERNAL - O SITE MAIS IRRITANTE DA INTERNET 🔥</title>
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
     <script src="https://js.stripe.com/v3/"></script>
+    <script src="./messages/popup-messages.js"></script>
+    <script src="./messages/random-messages.js"></script>
     <style>
         * {
             margin: 0;
@@ -165,6 +170,8 @@
         .main-content {
             padding: 70px 20px 20px;
             position: relative;
+            max-width: 1320px;
+            margin: 0 auto;
         }
 
         .welcome-section {
@@ -233,7 +240,7 @@
 
         .caos-card .item-emoji {
             font-size: 3em;
-            animation: rotate 2s linear infinite;
+            animation: none;
             filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
         }
 
@@ -364,6 +371,23 @@
             gap: 10px;
             max-height: 56vh;
             overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-cyan) rgba(255, 255, 255, 0.12);
+        }
+
+        .clicker-shop::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .clicker-shop::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+        }
+
+        .clicker-shop::-webkit-scrollbar-thumb {
+            background: var(--color-cyan);
+            border-radius: 8px;
+            border: 2px solid rgba(0, 0, 0, 0.22);
         }
 
         .clicker-upgrade {
@@ -639,6 +663,16 @@
             background: rgba(255,255,255,0.35);
         }
 
+        .pix-button:focus-visible,
+        .pix-modal button:focus-visible,
+        .clicker-main-btn:focus-visible,
+        .clicker-upgrade button:focus-visible,
+        .clicker-close:focus-visible,
+        .click-message-close:focus-visible {
+            outline: 3px solid #fff;
+            outline-offset: 2px;
+        }
+
         @keyframes fadeInFast {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -821,6 +855,18 @@
             .caos-grid { grid-template-columns: 1fr; }
             .success-content { padding: 30px; }
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation: none !important;
+                transition: none !important;
+                scroll-behavior: auto !important;
+            }
+
+            body::before {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -907,6 +953,8 @@
             pago: localStorage.getItem('anuncioInfernal_pago') === 'true',
             tempoInicio: Date.now(),
             tempoFinal: 0,
+            tempoPausadoMs: 0,
+            pausaInicioMs: null,
             anunciosCount: 0,
             fase: 1,
             intervals: [],
@@ -918,6 +966,9 @@
             comboTimeoutId: null
         };
 
+        const MAX_CAOS_CARDS = 70;
+        const MAX_FLOATING_MESSAGES = 18;
+
         const miniJogoAds = {
             aberto: false,
             pontos: 0,
@@ -928,18 +979,33 @@
             xp: 0,
             chanceCritica: 0.05,
             multiplicadorGlobal: 1,
+            prestigios: 0,
+            comboClique: 0,
+            ultimoCliqueMs: 0,
+            energiaFrenesi: 0,
+            frenesiAte: 0,
+            tempoJogadoSeg: 0,
             upgrades: {
                 cursorSpam: 0,
                 megaFalante: 0,
                 botFarm: 0,
                 algoritmoViral: 0,
-                bannerDourado: 0
+                bannerDourado: 0,
+                turboPop: 0,
+                chuvaDeClick: 0,
+                nanoBots: 0,
+                clickbaitCosmico: 0,
+                cupomInfinito: 0,
+                miraAlgoritmica: 0,
+                sateliteDeAds: 0,
+                explosaoDeConversao: 0,
+                fazendaDeMemes: 0,
+                portalViral: 0,
+                fabricaDeEscassez: 0
             },
             conquistas: [],
             intervalId: null,
-            autoSaveId: null,
-            miniGameIntervalId: null,
-            jogoAtivo: null
+            autoSaveId: null
         };
 
         const CONQUISTAS_CLICKER = {
@@ -962,17 +1028,51 @@
                 megaFalante: 55,
                 botFarm: 180,
                 algoritmoViral: 260,
-                bannerDourado: 220
+                bannerDourado: 220,
+                turboPop: 320,
+                chuvaDeClick: 420,
+                nanoBots: 560,
+                clickbaitCosmico: 760,
+                cupomInfinito: 980,
+                miraAlgoritmica: 1250,
+                sateliteDeAds: 1580,
+                explosaoDeConversao: 1950,
+                fazendaDeMemes: 2400,
+                portalViral: 2950,
+                fabricaDeEscassez: 3600
             };
             const escala = {
                 cursorSpam: 1.22,
                 megaFalante: 1.28,
                 botFarm: 1.35,
                 algoritmoViral: 1.38,
-                bannerDourado: 1.33
+                bannerDourado: 1.33,
+                turboPop: 1.4,
+                chuvaDeClick: 1.34,
+                nanoBots: 1.35,
+                clickbaitCosmico: 1.36,
+                cupomInfinito: 1.37,
+                miraAlgoritmica: 1.38,
+                sateliteDeAds: 1.4,
+                explosaoDeConversao: 1.42,
+                fazendaDeMemes: 1.44,
+                portalViral: 1.45,
+                fabricaDeEscassez: 1.46
             };
 
             return Math.floor(custosBase[tipo] * Math.pow(escala[tipo], u[tipo] || 0));
+        }
+
+        function multiplicadorPrestigio() {
+            return 1 + (miniJogoAds.prestigios * 0.25);
+        }
+
+        function frenesiAtivo() {
+            return Date.now() < miniJogoAds.frenesiAte;
+        }
+
+        function multiplicadorFrenesi() {
+            return frenesiAtivo() ? 3 : 1;
         }
 
         function salvarMiniJogoAds() {
@@ -985,6 +1085,11 @@
                 xp: miniJogoAds.xp,
                 chanceCritica: miniJogoAds.chanceCritica,
                 multiplicadorGlobal: miniJogoAds.multiplicadorGlobal,
+                prestigios: miniJogoAds.prestigios,
+                comboClique: miniJogoAds.comboClique,
+                energiaFrenesi: miniJogoAds.energiaFrenesi,
+                frenesiAte: miniJogoAds.frenesiAte,
+                tempoJogadoSeg: miniJogoAds.tempoJogadoSeg,
                 upgrades: miniJogoAds.upgrades,
                 conquistas: miniJogoAds.conquistas
             }));
@@ -1002,12 +1107,28 @@
             miniJogoAds.xp = Math.max(0, Math.floor(salvo.xp || 0));
             miniJogoAds.chanceCritica = Math.max(0.05, Number(salvo.chanceCritica || 0.05));
             miniJogoAds.multiplicadorGlobal = Math.max(1, Number(salvo.multiplicadorGlobal || 1));
+            miniJogoAds.prestigios = Math.max(0, Math.floor(salvo.prestigios || 0));
+            miniJogoAds.comboClique = Math.max(0, Math.floor(salvo.comboClique || 0));
+            miniJogoAds.energiaFrenesi = Math.max(0, Math.min(100, Math.floor(salvo.energiaFrenesi || 0)));
+            miniJogoAds.frenesiAte = Math.max(0, Math.floor(salvo.frenesiAte || 0));
+            miniJogoAds.tempoJogadoSeg = Math.max(0, Math.floor(salvo.tempoJogadoSeg || 0));
             miniJogoAds.upgrades = {
                 cursorSpam: Math.max(0, Math.floor(salvo.upgrades?.cursorSpam || 0)),
                 megaFalante: Math.max(0, Math.floor(salvo.upgrades?.megaFalante || 0)),
                 botFarm: Math.max(0, Math.floor(salvo.upgrades?.botFarm || 0)),
                 algoritmoViral: Math.max(0, Math.floor(salvo.upgrades?.algoritmoViral || 0)),
-                bannerDourado: Math.max(0, Math.floor(salvo.upgrades?.bannerDourado || 0))
+                bannerDourado: Math.max(0, Math.floor(salvo.upgrades?.bannerDourado || 0)),
+                turboPop: Math.max(0, Math.floor(salvo.upgrades?.turboPop || 0)),
+                chuvaDeClick: Math.max(0, Math.floor(salvo.upgrades?.chuvaDeClick || 0)),
+                nanoBots: Math.max(0, Math.floor(salvo.upgrades?.nanoBots || 0)),
+                clickbaitCosmico: Math.max(0, Math.floor(salvo.upgrades?.clickbaitCosmico || 0)),
+                cupomInfinito: Math.max(0, Math.floor(salvo.upgrades?.cupomInfinito || 0)),
+                miraAlgoritmica: Math.max(0, Math.floor(salvo.upgrades?.miraAlgoritmica || 0)),
+                sateliteDeAds: Math.max(0, Math.floor(salvo.upgrades?.sateliteDeAds || 0)),
+                explosaoDeConversao: Math.max(0, Math.floor(salvo.upgrades?.explosaoDeConversao || 0)),
+                fazendaDeMemes: Math.max(0, Math.floor(salvo.upgrades?.fazendaDeMemes || 0)),
+                portalViral: Math.max(0, Math.floor(salvo.upgrades?.portalViral || 0)),
+                fabricaDeEscassez: Math.max(0, Math.floor(salvo.upgrades?.fabricaDeEscassez || 0))
             };
             miniJogoAds.conquistas = Array.isArray(salvo.conquistas) ? salvo.conquistas : [];
         }
@@ -1071,24 +1192,65 @@
             document.getElementById('jgNivel').textContent = miniJogoAds.nivel;
             document.getElementById('jgCrit').textContent = `${Math.round(miniJogoAds.chanceCritica * 100)}%`;
             document.getElementById('jgMulti').textContent = `${miniJogoAds.multiplicadorGlobal.toFixed(2)}x`;
+            document.getElementById('jgCombo').textContent = `x${miniJogoAds.comboClique}`;
+            document.getElementById('jgEnergia').textContent = `${miniJogoAds.energiaFrenesi}%`;
+            document.getElementById('jgPrestigio').textContent = miniJogoAds.prestigios;
+            document.getElementById('jgPrestMulti').textContent = `${multiplicadorPrestigio().toFixed(2)}x`;
+            document.getElementById('jgEstadoFrenesi').textContent = frenesiAtivo() ? 'ATIVO (x3)' : 'Pronto para carregar';
+            document.getElementById('jgTempoJogo').textContent = `${Math.floor(miniJogoAds.tempoJogadoSeg / 60)}:${(miniJogoAds.tempoJogadoSeg % 60).toString().padStart(2, '0')}`;
 
             const custoCursor = custoUpgradeJogo('cursorSpam');
             const custoMega = custoUpgradeJogo('megaFalante');
             const custoFarm = custoUpgradeJogo('botFarm');
             const custoViral = custoUpgradeJogo('algoritmoViral');
             const custoDourado = custoUpgradeJogo('bannerDourado');
+            const custoTurbo = custoUpgradeJogo('turboPop');
+            const custoChuva = custoUpgradeJogo('chuvaDeClick');
+            const custoNano = custoUpgradeJogo('nanoBots');
+            const custoCosmico = custoUpgradeJogo('clickbaitCosmico');
+            const custoCupom = custoUpgradeJogo('cupomInfinito');
+            const custoMira = custoUpgradeJogo('miraAlgoritmica');
+            const custoSatelite = custoUpgradeJogo('sateliteDeAds');
+            const custoExplosao = custoUpgradeJogo('explosaoDeConversao');
+            const custoMemes = custoUpgradeJogo('fazendaDeMemes');
+            const custoPortal = custoUpgradeJogo('portalViral');
+            const custoEscassez = custoUpgradeJogo('fabricaDeEscassez');
 
             document.getElementById('jgCustoCursor').textContent = custoCursor;
             document.getElementById('jgCustoMega').textContent = custoMega;
             document.getElementById('jgCustoFarm').textContent = custoFarm;
             document.getElementById('jgCustoViral').textContent = custoViral;
             document.getElementById('jgCustoDourado').textContent = custoDourado;
+            document.getElementById('jgCustoTurbo').textContent = custoTurbo;
+            document.getElementById('jgCustoChuva').textContent = custoChuva;
+            document.getElementById('jgCustoNano').textContent = custoNano;
+            document.getElementById('jgCustoCosmico').textContent = custoCosmico;
+            document.getElementById('jgCustoCupom').textContent = custoCupom;
+            document.getElementById('jgCustoMira').textContent = custoMira;
+            document.getElementById('jgCustoSatelite').textContent = custoSatelite;
+            document.getElementById('jgCustoExplosao').textContent = custoExplosao;
+            document.getElementById('jgCustoMemes').textContent = custoMemes;
+            document.getElementById('jgCustoPortal').textContent = custoPortal;
+            document.getElementById('jgCustoEscassez').textContent = custoEscassez;
 
             document.getElementById('jgCompraCursor').disabled = miniJogoAds.pontos < custoCursor;
             document.getElementById('jgCompraMega').disabled = miniJogoAds.pontos < custoMega;
             document.getElementById('jgCompraFarm').disabled = miniJogoAds.pontos < custoFarm;
             document.getElementById('jgCompraViral').disabled = miniJogoAds.pontos < custoViral;
             document.getElementById('jgCompraDourado').disabled = miniJogoAds.pontos < custoDourado;
+            document.getElementById('jgCompraTurbo').disabled = miniJogoAds.pontos < custoTurbo;
+            document.getElementById('jgCompraChuva').disabled = miniJogoAds.pontos < custoChuva;
+            document.getElementById('jgCompraNano').disabled = miniJogoAds.pontos < custoNano;
+            document.getElementById('jgCompraCosmico').disabled = miniJogoAds.pontos < custoCosmico;
+            document.getElementById('jgCompraCupom').disabled = miniJogoAds.pontos < custoCupom;
+            document.getElementById('jgCompraMira').disabled = miniJogoAds.pontos < custoMira;
+            document.getElementById('jgCompraSatelite').disabled = miniJogoAds.pontos < custoSatelite;
+            document.getElementById('jgCompraExplosao').disabled = miniJogoAds.pontos < custoExplosao;
+            document.getElementById('jgCompraMemes').disabled = miniJogoAds.pontos < custoMemes;
+            document.getElementById('jgCompraPortal').disabled = miniJogoAds.pontos < custoPortal;
+            document.getElementById('jgCompraEscassez').disabled = miniJogoAds.pontos < custoEscassez;
+            document.getElementById('jgAtivarFrenesi').disabled = miniJogoAds.energiaFrenesi < 100 || frenesiAtivo();
+            document.getElementById('jgPrestigiar').disabled = miniJogoAds.pontos < 10000;
 
             const xpAtual = miniJogoAds.xp;
             const xpTotal = xpNecessarioNivel();
@@ -1102,18 +1264,32 @@
         }
 
         function clicarNoAnuncioGigante() {
+            const agora = Date.now();
+            const emCombo = miniJogoAds.ultimoCliqueMs && (agora - miniJogoAds.ultimoCliqueMs <= 900);
+            miniJogoAds.comboClique = emCombo ? Math.min(20, miniJogoAds.comboClique + 1) : 1;
+            miniJogoAds.ultimoCliqueMs = agora;
             miniJogoAds.totalCliques += 1;
 
-            let ganho = miniJogoAds.porClique * miniJogoAds.multiplicadorGlobal;
+            const multiCombo = 1 + (miniJogoAds.comboClique * 0.08);
+            let ganho = miniJogoAds.porClique
+                * miniJogoAds.multiplicadorGlobal
+                * multiplicadorPrestigio()
+                * multiplicadorFrenesi()
+                * multiCombo;
             const critico = Math.random() < miniJogoAds.chanceCritica;
             if (critico) ganho *= 2;
 
             ganho = Math.floor(ganho);
             miniJogoAds.pontos += ganho;
+            miniJogoAds.energiaFrenesi = Math.min(100, miniJogoAds.energiaFrenesi + 4 + (miniJogoAds.upgrades.turboPop * 2));
             ganharXP(2);
 
             if (critico) {
                 mostrarPopup('✨ CLIQUE CRÍTICO! x2');
+            }
+
+            if (miniJogoAds.comboClique > 0 && miniJogoAds.comboClique % 10 === 0) {
+                mostrarPopup(`🔥 COMBO x${miniJogoAds.comboClique}!`);
             }
 
             if (miniJogoAds.totalCliques % 50 === 0) {
@@ -1149,16 +1325,75 @@
                 miniJogoAds.chanceCritica += 0.02;
                 miniJogoAds.upgrades.bannerDourado += 1;
             }
+            if (tipo === 'turboPop') {
+                miniJogoAds.porClique += 2;
+                miniJogoAds.multiplicadorGlobal = Number((miniJogoAds.multiplicadorGlobal + 0.08).toFixed(2));
+                miniJogoAds.upgrades.turboPop += 1;
+            }
+            if (tipo === 'chuvaDeClick') {
+                miniJogoAds.porClique += 3;
+                miniJogoAds.upgrades.chuvaDeClick += 1;
+            }
+            if (tipo === 'nanoBots') {
+                miniJogoAds.autoClickers += 6;
+                miniJogoAds.upgrades.nanoBots += 1;
+            }
+            if (tipo === 'clickbaitCosmico') {
+                miniJogoAds.multiplicadorGlobal = Number((miniJogoAds.multiplicadorGlobal + 0.1).toFixed(2));
+                miniJogoAds.upgrades.clickbaitCosmico += 1;
+            }
+            if (tipo === 'cupomInfinito') {
+                miniJogoAds.chanceCritica += 0.02;
+                miniJogoAds.upgrades.cupomInfinito += 1;
+            }
+            if (tipo === 'miraAlgoritmica') {
+                miniJogoAds.porClique += 4;
+                miniJogoAds.chanceCritica += 0.01;
+                miniJogoAds.upgrades.miraAlgoritmica += 1;
+            }
+            if (tipo === 'sateliteDeAds') {
+                miniJogoAds.autoClickers += 8;
+                miniJogoAds.multiplicadorGlobal = Number((miniJogoAds.multiplicadorGlobal + 0.05).toFixed(2));
+                miniJogoAds.upgrades.sateliteDeAds += 1;
+            }
+            if (tipo === 'explosaoDeConversao') {
+                miniJogoAds.porClique += 7;
+                miniJogoAds.multiplicadorGlobal = Number((miniJogoAds.multiplicadorGlobal + 0.08).toFixed(2));
+                miniJogoAds.upgrades.explosaoDeConversao += 1;
+            }
+            if (tipo === 'fazendaDeMemes') {
+                miniJogoAds.autoClickers += 12;
+                miniJogoAds.upgrades.fazendaDeMemes += 1;
+            }
+            if (tipo === 'portalViral') {
+                miniJogoAds.porClique += 9;
+                miniJogoAds.autoClickers += 9;
+                miniJogoAds.upgrades.portalViral += 1;
+            }
+            if (tipo === 'fabricaDeEscassez') {
+                miniJogoAds.multiplicadorGlobal = Number((miniJogoAds.multiplicadorGlobal + 0.18).toFixed(2));
+                miniJogoAds.chanceCritica += 0.01;
+                miniJogoAds.upgrades.fabricaDeEscassez += 1;
+            }
+
+            miniJogoAds.chanceCritica = Math.min(0.95, miniJogoAds.chanceCritica);
 
             atualizarUIJogoAnuncios();
         }
 
-        function resetarMiniJogoAds() {
-            if (miniJogoAds.miniGameIntervalId) {
-                clearInterval(miniJogoAds.miniGameIntervalId);
-                miniJogoAds.miniGameIntervalId = null;
-            }
-            miniJogoAds.jogoAtivo = null;
+        function ativarFrenesi() {
+            if (miniJogoAds.energiaFrenesi < 100 || frenesiAtivo()) return;
+            miniJogoAds.energiaFrenesi = 0;
+            const duracaoMs = 10000 + (miniJogoAds.upgrades.turboPop * 1500);
+            miniJogoAds.frenesiAte = Date.now() + duracaoMs;
+            mostrarMensagemClique('⚡ FRENESI ATIVADO!', `x3 multiplicador por ${Math.floor(duracaoMs / 1000)}s`);
+            atualizarUIJogoAnuncios();
+        }
+
+        function executarPrestigio() {
+            if (miniJogoAds.pontos < 10000) return;
+
+            miniJogoAds.prestigios += 1;
             miniJogoAds.pontos = 0;
             miniJogoAds.totalCliques = 0;
             miniJogoAds.porClique = 1;
@@ -1167,12 +1402,66 @@
             miniJogoAds.xp = 0;
             miniJogoAds.chanceCritica = 0.05;
             miniJogoAds.multiplicadorGlobal = 1;
+            miniJogoAds.comboClique = 0;
+            miniJogoAds.ultimoCliqueMs = 0;
+            miniJogoAds.energiaFrenesi = 0;
+            miniJogoAds.frenesiAte = 0;
+            miniJogoAds.tempoJogadoSeg = 0;
             miniJogoAds.upgrades = {
                 cursorSpam: 0,
                 megaFalante: 0,
                 botFarm: 0,
                 algoritmoViral: 0,
-                bannerDourado: 0
+                bannerDourado: 0,
+                turboPop: 0,
+                chuvaDeClick: 0,
+                nanoBots: 0,
+                clickbaitCosmico: 0,
+                cupomInfinito: 0,
+                miraAlgoritmica: 0,
+                sateliteDeAds: 0,
+                explosaoDeConversao: 0,
+                fazendaDeMemes: 0,
+                portalViral: 0,
+                fabricaDeEscassez: 0
+            };
+
+            mostrarMensagemClique('👑 PRESTÍGIO!', `Você ganhou 1 Coroa do Caos.
+Bônus permanente: x${multiplicadorPrestigio().toFixed(2)}`);
+            atualizarUIJogoAnuncios();
+        }
+
+        function resetarMiniJogoAds() {
+            miniJogoAds.pontos = 0;
+            miniJogoAds.totalCliques = 0;
+            miniJogoAds.porClique = 1;
+            miniJogoAds.autoClickers = 0;
+            miniJogoAds.nivel = 1;
+            miniJogoAds.xp = 0;
+            miniJogoAds.chanceCritica = 0.05;
+            miniJogoAds.multiplicadorGlobal = 1;
+            miniJogoAds.comboClique = 0;
+            miniJogoAds.ultimoCliqueMs = 0;
+            miniJogoAds.energiaFrenesi = 0;
+            miniJogoAds.frenesiAte = 0;
+            miniJogoAds.tempoJogadoSeg = 0;
+            miniJogoAds.upgrades = {
+                cursorSpam: 0,
+                megaFalante: 0,
+                botFarm: 0,
+                algoritmoViral: 0,
+                bannerDourado: 0,
+                turboPop: 0,
+                chuvaDeClick: 0,
+                nanoBots: 0,
+                clickbaitCosmico: 0,
+                cupomInfinito: 0,
+                miraAlgoritmica: 0,
+                sateliteDeAds: 0,
+                explosaoDeConversao: 0,
+                fazendaDeMemes: 0,
+                portalViral: 0,
+                fabricaDeEscassez: 0
             };
             miniJogoAds.conquistas = [];
             atualizarUIJogoAnuncios();
@@ -1340,6 +1629,7 @@
             console.log('🔥 Página carregada!');
             console.log('Estado pago:', estado.pago);
             console.log('Tempo início:', estado.tempoInicio);
+            configurarControleVisibilidade();
             carregarMiniJogoAds();
             atualizarHudCombo();
             
@@ -1362,6 +1652,8 @@
             verificarPagamentoStripe();
 
             estado.tempoInicio = Date.now();
+            estado.tempoPausadoMs = 0;
+            estado.pausaInicioMs = null;
             console.log('✅ Cronômetro resetado no reload:', estado.tempoInicio);
 
             gerarAnuncios();
@@ -1417,10 +1709,30 @@
             { emoji: '🔥', texto: 'CHURRASQUEIRA QUEIMA TUDO', preco: 'R$ 899,90' },
             { emoji: '❄️', texto: 'FREEZER QUE CONGELA VOCÊ', preco: 'R$ 2.499,00' },
             { emoji: '🌪️', texto: 'VENTILADOR CRIA TORNADOS', preco: 'R$ 349,90' },
+            { emoji: '🧠', texto: 'CAPACETE DE FOCO (FOCA EM PROPAGANDA)', preco: 'R$ 799,90' },
+            { emoji: '🛸', texto: 'DRONE QUE ENTREGA CUPOM EXPIRADO', preco: 'R$ 1.499,00' },
+            { emoji: '🧨', texto: 'POPUP QUE ABRE ATÉ NO MICRO-ONDAS', preco: 'R$ 59,90' },
+            { emoji: '🧲', texto: 'IMÃ DE CLIENTES (SÓ ATRAI CURIOSO)', preco: 'R$ 899,90' },
+            { emoji: '🧼', texto: 'SABONETE ANTI-SPAM (NÃO FUNCIONA)', preco: 'R$ 39,90' },
+            { emoji: '🪩', texto: 'LUZ RGB QUE TOCA JINGLE DE ANÚNCIO', preco: 'R$ 499,90' },
+            { emoji: '📦', texto: 'CAIXA MISTERIOSA COM MAIS PROPAGANDA', preco: 'R$ 89,90' },
+            { emoji: '🦾', texto: 'BRAÇO ROBÔ QUE CLICA EM BANNERS', preco: 'R$ 2.999,90' },
+            { emoji: '🧃', texto: 'REFRIGERANTE COM SABOR DE RETARGETING', preco: 'R$ 12,90' },
+            { emoji: '📡', texto: 'ROTEADOR QUE INJETA ANÚNCIOS NO WIFI', preco: 'R$ 1.199,00' },
+            { emoji: '🎧', texto: 'FONE QUE TOCA JINGLE NO MUDO', preco: 'R$ 219,90' },
+            { emoji: '📣', texto: 'MEGAFONE COM PROPAGANDA AUTOMÁTICA', preco: 'R$ 349,90' },
+            { emoji: '🛒', texto: 'CARRINHO QUE ADICIONA ITEM SOZINHO', preco: 'R$ 89,90' },
+            { emoji: '🧾', texto: 'NOTA FISCAL COM TAXA DE ANSIEDADE', preco: 'R$ 19,90' },
+            { emoji: '🪫', texto: 'POWERBANK QUE DESCARREGA SEU CELULAR', preco: 'R$ 159,90' },
+            { emoji: '🧿', texto: 'AMULETO ANTI-POPUP (ATRAI POPUP)', preco: 'R$ 77,70' },
+            { emoji: '🛎️', texto: 'CAMPAINHA QUE CHAMA VENDEDOR INVISÍVEL', preco: 'R$ 64,90' },
+            { emoji: '🧰', texto: 'KIT FAÇA VOCÊ MESMO DE CLICKBAIT', preco: 'R$ 289,90' },
+            { emoji: '📱', texto: 'APP QUE MANDA 47 NOTIFICAÇÕES/MIN', preco: 'R$ 14,90' },
+            { emoji: '🛰️', texto: 'ANTENA 5G QUE SÓ PEGA PROPAGANDA', preco: 'R$ 1.899,90' },
         ];
 
         // ===== INTERAÇÕES ENGRAÇADAS DOS ANÚNCIOS =====
-        function interacaoAnuncioEngracada(adData) {
+        function interacaoAnuncioEngracada(adData, evt) {
             registrarCliqueNoItem();
             const acoes = [
                 // 1. FALSO PRÊMIO
@@ -1516,7 +1828,8 @@
                 },
                 // 5. ANÚNCIO AUTO-DESTRUTIVO
                 () => {
-                    const original = event.target.closest('.caos-card');
+                    const original = evt?.target?.closest('.caos-card');
+                    if (!original) return;
                     original.style.animation = 'none';
                     original.style.transform = 'rotate(720deg) scale(0)';
                     original.style.transition = 'all 1s ease';
@@ -1531,7 +1844,9 @@
                 },
                 // 6. CLONE DO ANÚNCIO
                 () => {
-                    const clone = event.target.closest('.caos-card').cloneNode(true);
+                    const origem = evt?.target?.closest('.caos-card');
+                    if (!origem) return;
+                    const clone = origem.cloneNode(true);
                     clone.style.position = 'fixed';
                     clone.style.left = Math.random() * 80 + '%';
                     clone.style.top = Math.random() * 80 + '%';
@@ -1597,7 +1912,8 @@
                 },
                 // 9. ANÚNCIO FUGITIVO
                 () => {
-                    const fugitivo = event.target.closest('.caos-card');
+                    const fugitivo = evt?.target?.closest('.caos-card');
+                    if (!fugitivo) return;
                     let moves = 0;
                     const maxMoves = 5;
                     
@@ -1825,172 +2141,47 @@
             reproduzirBip();
         }
 
-        function limparMiniAreaJogo() {
-            if (miniJogoAds.miniGameIntervalId) {
-                clearInterval(miniJogoAds.miniGameIntervalId);
-                miniJogoAds.miniGameIntervalId = null;
+        function limitarQuantidadeElementos(seletor, maximo) {
+            const elementos = document.querySelectorAll(seletor);
+            const excedente = elementos.length - maximo;
+            if (excedente <= 0) return;
+            for (let i = 0; i < excedente; i++) {
+                elementos[i].remove();
             }
-            miniJogoAds.jogoAtivo = null;
-            const area = document.getElementById('jgMiniArea');
-            if (area) area.innerHTML = '<div>Escolha um mini-jogo de anúncios abaixo 👇</div>';
         }
 
-        function iniciarMiniJogoCorridaBanner() {
-            const area = document.getElementById('jgMiniArea');
-            if (!area) return;
-            limparMiniAreaJogo();
-            miniJogoAds.jogoAtivo = 'corrida-banner';
-
-            let tempo = 12;
-            let acertos = 0;
-
-            area.innerHTML = `
-                <div><strong>🏃 Corrida do Banner</strong> — clique no banner fugitivo antes do tempo acabar!</div>
-                <div id="jgTimerCorrida" style="margin-top: 6px;">Tempo: 12s | Acertos: 0</div>
-                <div id="jgArenaCorrida" style="margin-top: 8px; position: relative; height: 180px; border: 1px dashed rgba(255,255,255,0.4); border-radius: 10px;"></div>
+        function criarCardAnuncio(adData, animationDelay = null) {
+            const ad = document.createElement('div');
+            ad.className = 'caos-card';
+            ad.innerHTML = `
+                <div class="item-badge">conteúdo satírico</div>
+                <div class="item-emoji">${adData.emoji}</div>
+                <div class="item-text">${adData.texto}</div>
+                <div class="item-price">💰 ${adData.preco}</div>
+                <div style="font-size: 0.8em; margin-top: 10px; color: #ffff00;">🎭 INTERAÇÃO MALUCA AQUI</div>
             `;
 
-            const arena = document.getElementById('jgArenaCorrida');
-            const btn = document.createElement('button');
-            btn.textContent = '📢 BANNER!';
-            btn.style.cssText = 'position:absolute; border:none; border-radius:8px; padding:8px 10px; background:#00ffff; color:#111; font-weight:bold; cursor:pointer;';
-            arena.appendChild(btn);
+            if (animationDelay !== null) {
+                ad.style.animationDelay = animationDelay;
+            }
 
-            const mover = () => {
-                btn.style.left = Math.floor(Math.random() * 75) + '%';
-                btn.style.top = Math.floor(Math.random() * 70) + '%';
+            ad.onclick = (e) => {
+                interacaoAnuncioEngracada(adData, e);
             };
 
-            btn.addEventListener('click', () => {
-                acertos += 1;
-                miniJogoAds.pontos += 12;
-                ganharXP(1);
-                document.getElementById('jgTimerCorrida').textContent = `Tempo: ${tempo}s | Acertos: ${acertos}`;
-                atualizarUIJogoAnuncios();
-                mover();
-            });
-
-            mover();
-            miniJogoAds.miniGameIntervalId = setInterval(() => {
-                tempo -= 1;
-                const timer = document.getElementById('jgTimerCorrida');
-                if (timer) timer.textContent = `Tempo: ${tempo}s | Acertos: ${acertos}`;
-
-                if (tempo <= 0) {
-                    clearInterval(miniJogoAds.miniGameIntervalId);
-                    miniJogoAds.miniGameIntervalId = null;
-                    const bonus = acertos >= 15 ? 180 : acertos * 8;
-                    miniJogoAds.pontos += bonus;
-                    mostrarMensagemClique('🏁 Corrida encerrada', `Acertos: ${acertos}\nBônus: +${bonus} pontos`);
-                    atualizarUIJogoAnuncios();
-                    miniJogoAds.jogoAtivo = null;
-                }
-            }, 1000);
+            return ad;
         }
 
-        function iniciarMiniJogoLeilao() {
-            const area = document.getElementById('jgMiniArea');
-            if (!area) return;
-            limparMiniAreaJogo();
-            miniJogoAds.jogoAtivo = 'leilao';
-
-            const alvo = 100 + Math.floor(Math.random() * 900);
-            let tentativas = 5;
-
-            area.innerHTML = `
-                <div><strong>💸 Leilão Relâmpago</strong> — acerte o preço secreto do anúncio (${100}-${999})</div>
-                <div id="jgLeilaoStatus" style="margin-top: 6px;">Tentativas: 5</div>
-                <div style="margin-top:8px; display:flex; gap:8px;">
-                    <input id="jgLeilaoInput" type="number" min="100" max="999" style="flex:1; border-radius:8px; border:1px solid #ccc; padding:8px;" placeholder="Digite seu lance" />
-                    <button id="jgLeilaoBtn" style="border:none; border-radius:8px; padding:8px 10px; background:#00ffff; color:#111; font-weight:bold; cursor:pointer;">Enviar</button>
-                </div>
-                <div id="jgLeilaoDica" style="margin-top:8px;"></div>
-            `;
-
-            document.getElementById('jgLeilaoBtn').addEventListener('click', () => {
-                const input = document.getElementById('jgLeilaoInput');
-                const dica = document.getElementById('jgLeilaoDica');
-                const status = document.getElementById('jgLeilaoStatus');
-                const valor = parseInt(input.value, 10);
-                if (Number.isNaN(valor)) return;
-
-                tentativas -= 1;
-                status.textContent = `Tentativas: ${tentativas}`;
-
-                if (valor === alvo) {
-                    miniJogoAds.pontos += 220;
-                    ganharXP(8);
-                    dica.textContent = '🎯 Acertou em cheio! +220 pontos';
-                    atualizarUIJogoAnuncios();
-                    miniJogoAds.jogoAtivo = null;
-                    return;
-                }
-
-                dica.textContent = valor < alvo ? '⬆️ Mais alto!' : '⬇️ Mais baixo!';
-
-                if (tentativas <= 0) {
-                    const distancia = Math.abs(valor - alvo);
-                    const bonus = distancia <= 30 ? 90 : distancia <= 80 ? 45 : 15;
-                    miniJogoAds.pontos += bonus;
-                    ganharXP(3);
-                    dica.textContent = `Fim! Preço era ${alvo}. Você ganhou +${bonus} pontos.`;
-                    atualizarUIJogoAnuncios();
-                    miniJogoAds.jogoAtivo = null;
-                }
-            });
-        }
-
-        function iniciarMiniJogoCacaPopup() {
-            const area = document.getElementById('jgMiniArea');
-            if (!area) return;
-            limparMiniAreaJogo();
-            miniJogoAds.jogoAtivo = 'caca-popup';
-
-            let rodada = 1;
-            let acertos = 0;
-            const totalRodadas = 8;
-
-            const render = () => {
-                const alvo = Math.floor(Math.random() * 9);
-                area.innerHTML = `
-                    <div><strong>🧨 Caça-popup</strong> — encontre o popup correto (${rodada}/${totalRodadas})</div>
-                    <div style="margin-top:6px;">Acertos: ${acertos}</div>
-                    <div id="jgGridPopup" style="margin-top:8px; display:grid; grid-template-columns: repeat(3, 1fr); gap:6px;"></div>
-                `;
-
-                const grid = document.getElementById('jgGridPopup');
-                for (let i = 0; i < 9; i++) {
-                    const b = document.createElement('button');
-                    b.textContent = '🪟';
-                    b.style.cssText = 'border:none; border-radius:8px; padding:10px; background:#333; color:#fff; cursor:pointer;';
-                    b.addEventListener('click', () => {
-                        if (i === alvo) {
-                            acertos += 1;
-                            miniJogoAds.pontos += 30;
-                            ganharXP(2);
-                        }
-
-                        rodada += 1;
-                        if (rodada > totalRodadas) {
-                            const bonus = acertos * 12;
-                            miniJogoAds.pontos += bonus;
-                            mostrarMensagemClique('✅ Caça-popup finalizado', `Acertos: ${acertos}/${totalRodadas}\nBônus: +${bonus} pontos`);
-                            atualizarUIJogoAnuncios();
-                            miniJogoAds.jogoAtivo = null;
-                        } else {
-                            atualizarUIJogoAnuncios();
-                            render();
-                        }
-                    });
-                    grid.appendChild(b);
-                }
-            };
-
-            render();
+        function limitarAnunciosNaGrade(container) {
+            const anuncios = container.querySelectorAll('.caos-card:not(.game-entry-card)');
+            const excedente = anuncios.length - MAX_CAOS_CARDS;
+            if (excedente <= 0) return;
+            for (let i = 0; i < excedente; i++) {
+                anuncios[i].remove();
+            }
         }
 
         function fecharMiniJogoAnuncios() {
-            limparMiniAreaJogo();
             const modal = document.getElementById('miniJogoAdsModal');
             if (modal) modal.remove();
             if (miniJogoAds.intervalId) {
@@ -2024,10 +2215,18 @@
                                 <div class="clicker-line"><span>Nível</span><strong id="jgNivel">1</strong></div>
                                 <div class="clicker-line"><span>Chance crítica</span><strong id="jgCrit">5%</strong></div>
                                 <div class="clicker-line"><span>Multiplicador</span><strong id="jgMulti">1.00x</strong></div>
+                                <div class="clicker-line"><span>Combo atual</span><strong id="jgCombo">x0</strong></div>
+                                <div class="clicker-line"><span>Energia Frenesi</span><strong id="jgEnergia">0%</strong></div>
+                                <div class="clicker-line"><span>Status Frenesi</span><strong id="jgEstadoFrenesi">Pronto para carregar</strong></div>
+                                <div class="clicker-line"><span>Prestígios</span><strong id="jgPrestigio">0</strong></div>
+                                <div class="clicker-line"><span>Bônus Prestígio</span><strong id="jgPrestMulti">1.00x</strong></div>
+                                <div class="clicker-line"><span>Tempo de jogo</span><strong id="jgTempoJogo">0:00</strong></div>
                                 <div class="clicker-line"><span>XP</span><strong id="jgXpTxt">0 / 80</strong></div>
                                 <div class="clicker-progress"><div id="jgXpBar"></div></div>
                             </div>
                             <button class="clicker-main-btn" id="jgBtnClick">📢 CLICAR NO ANÚNCIO GIGANTE</button>
+                            <button class="clicker-main-btn" id="jgAtivarFrenesi" style="margin-top: 10px;">⚡ ATIVAR FRENESI (100%)</button>
+                            <button class="clicker-main-btn" id="jgPrestigiar" style="margin-top: 10px; background: radial-gradient(circle, #ffd54f 0%, #ff9800 100%); color:#1f1f1f;">👑 PRESTIGIAR (10.000 pts)</button>
                             <div class="clicker-achievements" id="jgConquistas"></div>
                             <button class="clicker-main-btn" id="jgReset" style="margin-top: 10px; background: radial-gradient(circle, #5c5c5c 0%, #2e2e2e 100%);">♻️ RESETAR PROGRESSO</button>
                         </div>
@@ -2058,13 +2257,59 @@
                                 <button id="jgCompraDourado">Comprar (<span id="jgCustoDourado">220</span>)</button>
                             </div>
                             <div class="clicker-upgrade">
-                                <strong>🎮 MINI JOGOS EXTRAS</strong>
-                                <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
-                                    <button id="jgMiniCorrida">🏃 Corrida do Banner</button>
-                                    <button id="jgMiniLeilao">💸 Leilão Relâmpago</button>
-                                    <button id="jgMiniPopup">🧨 Caça-popup</button>
-                                </div>
-                                <div id="jgMiniArea" style="margin-top:8px; background: rgba(255,255,255,0.05); border:1px dashed rgba(255,255,255,0.28); border-radius:10px; padding:8px; min-height:90px;">Escolha um mini-jogo de anúncios abaixo 👇</div>
+                                <strong>⚡ Turbo Pop</strong>
+                                <div>+2 por clique, +0.08x multi e +carga de frenesi</div>
+                                <button id="jgCompraTurbo">Comprar (<span id="jgCustoTurbo">320</span>)</button>
+                            </div>
+                            <div class="clicker-upgrade">
+                                <strong>🌧️ Chuva de Click</strong>
+                                <div>+3 pontos por clique</div>
+                                <button id="jgCompraChuva">Comprar (<span id="jgCustoChuva">420</span>)</button>
+                            </div>
+                            <div class="clicker-upgrade">
+                                <strong>🧪 NanoBots de CTR</strong>
+                                <div>+6 auto-cliques por segundo</div>
+                                <button id="jgCompraNano">Comprar (<span id="jgCustoNano">560</span>)</button>
+                            </div>
+                            <div class="clicker-upgrade">
+                                <strong>🪐 Clickbait Cósmico</strong>
+                                <div>+0.10x multiplicador global</div>
+                                <button id="jgCompraCosmico">Comprar (<span id="jgCustoCosmico">760</span>)</button>
+                            </div>
+                            <div class="clicker-upgrade">
+                                <strong>🏷️ Cupom Infinito</strong>
+                                <div>+2% chance crítica</div>
+                                <button id="jgCompraCupom">Comprar (<span id="jgCustoCupom">980</span>)</button>
+                            </div>
+                            <div class="clicker-upgrade">
+                                <strong>🎯 Mira Algorítmica</strong>
+                                <div>+4 por clique e +1% crítico</div>
+                                <button id="jgCompraMira">Comprar (<span id="jgCustoMira">1250</span>)</button>
+                            </div>
+                            <div class="clicker-upgrade">
+                                <strong>🛰️ Satélite de Ads</strong>
+                                <div>+8 auto/s e +0.05x multi</div>
+                                <button id="jgCompraSatelite">Comprar (<span id="jgCustoSatelite">1580</span>)</button>
+                            </div>
+                            <div class="clicker-upgrade">
+                                <strong>💥 Explosão de Conversão</strong>
+                                <div>+7 por clique e +0.08x multi</div>
+                                <button id="jgCompraExplosao">Comprar (<span id="jgCustoExplosao">1950</span>)</button>
+                            </div>
+                            <div class="clicker-upgrade">
+                                <strong>😂 Fazenda de Memes</strong>
+                                <div>+12 auto-cliques por segundo</div>
+                                <button id="jgCompraMemes">Comprar (<span id="jgCustoMemes">2400</span>)</button>
+                            </div>
+                            <div class="clicker-upgrade">
+                                <strong>🌀 Portal Viral</strong>
+                                <div>+9 por clique e +9 auto/s</div>
+                                <button id="jgCompraPortal">Comprar (<span id="jgCustoPortal">2950</span>)</button>
+                            </div>
+                            <div class="clicker-upgrade">
+                                <strong>🏭 Fábrica de Escassez</strong>
+                                <div>+0.18x multi e +1% crítico</div>
+                                <button id="jgCompraEscassez">Comprar (<span id="jgCustoEscassez">3600</span>)</button>
                             </div>
                         </div>
                     </div>
@@ -2072,30 +2317,51 @@
             `;
 
             document.body.appendChild(modal);
+
             atualizarUIJogoAnuncios();
 
             document.getElementById('jgFechar').addEventListener('click', fecharMiniJogoAnuncios);
             document.getElementById('jgBtnClick').addEventListener('click', clicarNoAnuncioGigante);
+            document.getElementById('jgAtivarFrenesi').addEventListener('click', ativarFrenesi);
+            document.getElementById('jgPrestigiar').addEventListener('click', executarPrestigio);
             document.getElementById('jgCompraCursor').addEventListener('click', () => comprarUpgradeJogo('cursorSpam'));
             document.getElementById('jgCompraMega').addEventListener('click', () => comprarUpgradeJogo('megaFalante'));
             document.getElementById('jgCompraFarm').addEventListener('click', () => comprarUpgradeJogo('botFarm'));
             document.getElementById('jgCompraViral').addEventListener('click', () => comprarUpgradeJogo('algoritmoViral'));
             document.getElementById('jgCompraDourado').addEventListener('click', () => comprarUpgradeJogo('bannerDourado'));
+            document.getElementById('jgCompraTurbo').addEventListener('click', () => comprarUpgradeJogo('turboPop'));
+            document.getElementById('jgCompraChuva').addEventListener('click', () => comprarUpgradeJogo('chuvaDeClick'));
+            document.getElementById('jgCompraNano').addEventListener('click', () => comprarUpgradeJogo('nanoBots'));
+            document.getElementById('jgCompraCosmico').addEventListener('click', () => comprarUpgradeJogo('clickbaitCosmico'));
+            document.getElementById('jgCompraCupom').addEventListener('click', () => comprarUpgradeJogo('cupomInfinito'));
+            document.getElementById('jgCompraMira').addEventListener('click', () => comprarUpgradeJogo('miraAlgoritmica'));
+            document.getElementById('jgCompraSatelite').addEventListener('click', () => comprarUpgradeJogo('sateliteDeAds'));
+            document.getElementById('jgCompraExplosao').addEventListener('click', () => comprarUpgradeJogo('explosaoDeConversao'));
+            document.getElementById('jgCompraMemes').addEventListener('click', () => comprarUpgradeJogo('fazendaDeMemes'));
+            document.getElementById('jgCompraPortal').addEventListener('click', () => comprarUpgradeJogo('portalViral'));
+            document.getElementById('jgCompraEscassez').addEventListener('click', () => comprarUpgradeJogo('fabricaDeEscassez'));
             document.getElementById('jgReset').addEventListener('click', resetarMiniJogoAds);
-
-            document.getElementById('jgMiniCorrida').addEventListener('click', iniciarMiniJogoCorridaBanner);
-            document.getElementById('jgMiniLeilao').addEventListener('click', iniciarMiniJogoLeilao);
-            document.getElementById('jgMiniPopup').addEventListener('click', iniciarMiniJogoCacaPopup);
 
             modal.addEventListener('click', (event) => {
                 if (event.target === modal) fecharMiniJogoAnuncios();
             });
 
             miniJogoAds.intervalId = setInterval(() => {
-                if (miniJogoAds.autoClickers > 0) {
-                    const ganhoAuto = Math.floor(miniJogoAds.autoClickers * miniJogoAds.multiplicadorGlobal);
+                if (!document.hidden && miniJogoAds.aberto) {
+                    miniJogoAds.tempoJogadoSeg += 1;
+                }
+
+                if (!document.hidden && miniJogoAds.autoClickers > 0) {
+                    const ganhoAuto = Math.floor(
+                        miniJogoAds.autoClickers
+                        * miniJogoAds.multiplicadorGlobal
+                        * multiplicadorPrestigio()
+                        * multiplicadorFrenesi()
+                    );
                     miniJogoAds.pontos += ganhoAuto;
                     ganharXP(1);
+                    atualizarUIJogoAnuncios();
+                } else if (frenesiAtivo()) {
                     atualizarUIJogoAnuncios();
                 }
             }, 1000);
@@ -2110,36 +2376,38 @@
         function gerarAnuncios() {
             const container = document.getElementById('caosGrid');
             container.innerHTML = '';
+            const frag = document.createDocumentFragment();
 
-            const cardJogo = document.createElement('div');
-            cardJogo.className = 'caos-card game-entry-card';
-            cardJogo.innerHTML = `
-                <div class="item-badge">mini-jogo especial</div>
-                <div class="item-emoji">🕹️</div>
-                <div class="item-text">ABRIR ANÚNCIO CLICKER DO CAOS</div>
-                <div class="item-price">🏆 Ganhe pontos e upgrades</div>
-                <div style="font-size: 0.8em; margin-top: 10px; color: #fff;">🎮 CLIQUE PARA JOGAR</div>
-            `;
-            cardJogo.onclick = () => abrirMiniJogoAnuncios();
-            container.appendChild(cardJogo);
+            const cardsMiniJogos = [
+                {
+                    emoji: '🕹️',
+                    titulo: 'ARENA CLICKER DO CAOS',
+                    subtitulo: '🏆 Combo, frenesi e prestígio permanente',
+                    acao: () => abrirMiniJogoAnuncios()
+                }
+            ];
+
+            cardsMiniJogos.forEach((game) => {
+                const cardJogo = document.createElement('div');
+                cardJogo.className = 'caos-card game-entry-card';
+                cardJogo.innerHTML = `
+                    <div class="item-badge">mini-jogo especial</div>
+                    <div class="item-emoji">${game.emoji}</div>
+                    <div class="item-text">${game.titulo}</div>
+                    <div class="item-price">${game.subtitulo}</div>
+                    <div style="font-size: 0.8em; margin-top: 10px; color: #fff;">🎮 CLIQUE PARA JOGAR</div>
+                `;
+                cardJogo.onclick = game.acao;
+                frag.appendChild(cardJogo);
+            });
 
             for (let i = 0; i < 25; i++) {
                 const adData = anunciosData[Math.floor(Math.random() * anunciosData.length)];
-                const ad = document.createElement('div');
-                ad.className = 'caos-card';
-                ad.innerHTML = `
-                    <div class="item-badge">conteúdo satírico</div>
-                    <div class="item-emoji">${adData.emoji}</div>
-                    <div class="item-text">${adData.texto}</div>
-                    <div class="item-price">💰 ${adData.preco}</div>
-                    <div style="font-size: 0.8em; margin-top: 10px; color: #ffff00;">🎭 INTERAÇÃO MALUCA AQUI</div>
-                `;
-                ad.style.animationDelay = (i * 0.1) + 's';
-                ad.onclick = (e) => {
-                    interacaoAnuncioEngracada(adData);
-                };
-                container.appendChild(ad);
+                frag.appendChild(criarCardAnuncio(adData, (i * 0.1) + 's'));
             }
+
+            container.appendChild(frag);
+            limitarAnunciosNaGrade(container);
 
             estado.anunciosCount = 25;
         }
@@ -2147,23 +2415,15 @@
         function adicionarMaisAnuncios() {
             const container = document.getElementById('caosGrid');
             const quantidade = 5 + Math.floor(Math.random() * 5);
+            const frag = document.createDocumentFragment();
 
             for (let i = 0; i < quantidade; i++) {
                 const adData = anunciosData[Math.floor(Math.random() * anunciosData.length)];
-                const ad = document.createElement('div');
-                ad.className = 'caos-card';
-                ad.innerHTML = `
-                    <div class="item-badge">conteúdo satírico</div>
-                    <div class="item-emoji">${adData.emoji}</div>
-                    <div class="item-text">${adData.texto}</div>
-                    <div class="item-price">💰 ${adData.preco}</div>
-                    <div style="font-size: 0.8em; margin-top: 10px; color: #ffff00;">🎭 INTERAÇÃO MALUCA AQUI</div>
-                `;
-                ad.onclick = (e) => {
-                    interacaoAnuncioEngracada(adData);
-                };
-                container.appendChild(ad);
+                frag.appendChild(criarCardAnuncio(adData));
             }
+
+            container.appendChild(frag);
+            limitarAnunciosNaGrade(container);
 
             estado.anunciosCount += quantidade;
         }
@@ -2174,7 +2434,7 @@
             let segundosPrevios = 0;
             const interval = setInterval(() => {
                 if (!estado.pago) {
-                    const tempoDecorrido = Math.floor((Date.now() - estado.tempoInicio) / 1000);
+                    const tempoDecorrido = tempoSiteAtivoSegundos();
                     const minutos = Math.floor(tempoDecorrido / 60);
                     const segundos = tempoDecorrido % 60;
 
@@ -2205,6 +2465,23 @@
             estado.intervals.push(interval);
         }
 
+        function tempoSiteAtivoSegundos() {
+            const agora = Date.now();
+            const pausaAtual = estado.pausaInicioMs ? (agora - estado.pausaInicioMs) : 0;
+            return Math.max(0, Math.floor((agora - estado.tempoInicio - estado.tempoPausadoMs - pausaAtual) / 1000));
+        }
+
+        function configurarControleVisibilidade() {
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    if (!estado.pausaInicioMs) estado.pausaInicioMs = Date.now();
+                } else if (estado.pausaInicioMs) {
+                    estado.tempoPausadoMs += (Date.now() - estado.pausaInicioMs);
+                    estado.pausaInicioMs = null;
+                }
+            });
+        }
+
         // ===== POP-UPS =====
         function mostrarPopup(mensagem) {
             console.log('💬 Mostrando popup:', mensagem);
@@ -2219,6 +2496,7 @@
             popup.style.textShadow = '3px 3px 0 black';
             popup.style.fontWeight = 'bold';
             popup.style.zIndex = '9000';
+            limitarQuantidadeElementos('.random-message', MAX_FLOATING_MESSAGES - 1);
             document.body.appendChild(popup);
 
             setTimeout(() => popup.remove(), 8000);
@@ -2261,28 +2539,9 @@
                     return;
                 }
 
-                const mensagensEngracadas = [
-                    '🤡 Sua mãe ligou, ela quer que você pague logo!',
-                    '🧠 Seu QI: 200. Sua paciência: 0',
-                    '👽 OVNI detectado... mas você ainda tá aqui!',
-                    '🍕 Pizza grátis se você pagar R$ 2,00!',
-                    '🦖 Dinossauros voltaram! Mas você continua preso aqui',
-                    '🎯 Você ganhou... NADA! Pague R$ 2,00',
-                    '👻 BOO! Assustou? Agora paga!',
-                    '🌈 No fim do arco-íris tem um botão PIX',
-                    '🔮 Vejo em meu futuro... você pagando R$ 2,00',
-                    '🎪 Bem-vindo ao circo dos horrores financeiros!',
-                    '🧙 Abracadabra! Ainda não pagou?',
-                    '🎲 Jogamos um dado: você perdeu. Pague.',
-                    '🎰 Jackpot! Você ganhou... mais anúncios!',
-                    '🦄 Unicórnios existem, mas seu dinheiro não',
-                    '🌮 Taco terça-feira cancelada. Motivo: você não pagou',
-                    '🎸 Rock n Roll! Mas primeiro: R$ 2,00',
-                    '🍦 Sorvete derretendo... sua paciência também',
-                    '🚀 SpaceX cancelou missão pra ver você sofrer',
-                    '🎭 Shakespeare disse: Pagar ou não pagar? PAGAR!',
-                    '🦅 Águia americana viu você. Não ficou orgulhosa.',
-                ];
+                const mensagensEngracadas = (window.MENSAGENS_POPUPS && window.MENSAGENS_POPUPS.length > 0)
+                    ? window.MENSAGENS_POPUPS
+                    : ['📣 Carregando mensagens... enquanto isso, mais caos!'];
 
                 mostrarPopup(mensagensEngracadas[Math.floor(Math.random() * mensagensEngracadas.length)]);
                 reproduzirBip();
@@ -2294,28 +2553,9 @@
         // ===== MENSAGENS ALEATÓRIAS =====
         function criarMensagensAleatorias() {
             console.log('📝 Iniciando mensagens aleatórias engraçadas...');
-            const mensagensEngracadas = [
-                '🤖 Elon Musk cancelou o Twitter pra ver você sofrer',
-                '🎮 Seu save foi corrompido... igual sua paciência',
-                '🐱 Seu gato julga suas escolhas de vida',
-                '☕ Café ficou frio. Assim como suas chances de sair',
-                '🌮 Taco Bell não entrega aqui. Nem esperança.',
-                '🎸 Guitar Hero: modo impossível ativado na vida real',
-                '🍔 McDonalds: máquina de sorvete quebrada. E você?',
-                '🎲 Dado de 20 lados: você tirou 1. Crítico!',
-                '🧙 Gandalf disse: Você não vai passar... sem pagar',
-                '🦸 Super-herói favorito: Homem-PIX',
-                '🎬 Netflix pergunta: você ainda está aí sofrendo?',
-                '🍿 Pipoca acabou. Show continua.',
-                '🎺 Trombones tristes tocando pra você',
-                '🦕 T-Rex tem braços curtos. Você tem paciência curta.',
-                '🌮 Nachos sem queijo = Você sem R$ 2,00',
-                '🎪 Circo dos horrores: plateia vazia, só você',
-                '🥤 Refil grátis! (De ansiedade)',
-                '🎯 Bullseye! Acertou o botão errado de novo',
-                '🦉 Coruja sábia diz: UHUUUU pague logo',
-                '🧃 Suco de caixinha: sua infância feliz antes disso',
-            ];
+            const mensagensEngracadas = (window.MENSAGENS_ALEATORIAS && window.MENSAGENS_ALEATORIAS.length > 0)
+                ? window.MENSAGENS_ALEATORIAS
+                : ['📝 Sem mensagens carregadas... inventando caos em tempo real.'];
 
             const interval = setInterval(() => {
                 if (estado.pago) {
@@ -2340,6 +2580,7 @@
                     msg.style.padding = '15px';
                     msg.style.borderRadius = '10px';
                     msg.style.border = '3px solid ' + '#' + Math.floor(Math.random()*16777215).toString(16);
+                    limitarQuantidadeElementos('.random-message', MAX_FLOATING_MESSAGES - 1);
                     document.body.appendChild(msg);
 
                     reproduzirBip();
@@ -2570,7 +2811,7 @@
             criarConfete();
 
             estado.pago = true;
-            estado.tempoFinal = Math.floor((Date.now() - estado.tempoInicio) / 1000);
+            estado.tempoFinal = tempoSiteAtivoSegundos();
             atualizarHudCombo();
 
             localStorage.setItem('anuncioInfernal_pago', 'true');
